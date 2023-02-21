@@ -1,0 +1,32 @@
+// https://www.typescriptlang.org/tsconfig
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    /* Specify what module code is generated. */
+    "module": "commonjs",
+    "sourceMap": true,
+    /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "target": "es2018",
+    "outDir": "./dist",
+    /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    "esModuleInterop": true,
+    /* Ensure that casing is correct in imports. */
+    "forceConsistentCasingInFileNames": true,
+    /* Enable all strict type-checking options. */
+    "strict": true,
+    /* Allows importing modules with a ‘.json’ extension */
+    "resolveJsonModule": true,
+    "types": [
+      "vitest/globals"
+    ],
+    "skipLibCheck": true
+    /* Skip type checking all .d.ts files. This can save time during compilation at the expense of type-system accuracy. */
+  },
+  "include": [
+    "src/**/*.ts",
+    "types/**/*.ts",
+    ".eslintrc.cjs",
+    "vitest.config.ts",
+    "test/**/*.ts"
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "name": "legal-document-generator-api",
+  "version": "0.0.3",
+  "description": "An API to generate legal document using one or several Record Of Processing Activities (ROPAs) as input",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node dist/src/index.js",
+    "dev": "nodemon src/index.ts",
+    "build": "rimraf ./dist && tsc",
+    "generate-openapi-types": "node ./scripts/generateOpenApiTypes.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "compare-node-versions": "node scripts/nodeVersionComparator.mjs",
+    "prepare": "husky install",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "npm run type-check -- --watch"
+  },
+  "lint-staged": {
+    "*.ts": "eslint --fix",
+    "src/**/*.{js,jsx,ts,tsx, json}": "prettier --write",
+    "test/**/*.{js,jsx,ts,tsx}": [
+      "npm run test"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/progressive-identity/legal-document-generator-api.git"
+  },
+  "keywords": [
+    "legal",
+    "gdpr",
+    "legaltech",
+    "legal-documents"
+  ],
+  "author": "Alias - CODE IS LAW",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/progressive-identity/legal-document-generator-api/issues"
+  },
+  "volta": {
+    "node": "18.13.0"
+  },
+  "engines": {
+    "node": "18.13.0"
+  },
+  "homepage": "https://github.com/progressive-identity/legal-document-generator-api#readme",
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.16",
+    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "@typescript-eslint/parser": "^5.50.0",
+    "eslint": "^8.33.0",
+    "eslint-config-prettier": "^8.6.0",
+    "husky": "^8.0.3",
+    "nodemon": "^2.0.20",
+    "prettier": "^2.8.3",
+    "ts-node": "^10.9.1",
+    "vitest": "^0.28.3"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "elastic-apm-node": "^3.42.0",
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
+    "regenerator-runtime": "^0.13.11",
+    "typescript": "^4.9.5",
+    "winston": "^3.8.2",
+    "x-xss-protection": "^2.0.0"
+  }
+}
