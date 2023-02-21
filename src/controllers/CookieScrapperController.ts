@@ -71,7 +71,8 @@ export class CookieScrapperController
     // TODO: maybe fetch 50% of the page in the limit of 100 pages
     // TODO: test a message queue (rabbitMQ ?) because this function will be slow
     // TODO: find a way to classify the cookies
-    const url = 'https://www.google.com'
+    // TODO: fetch the root url by default (important)
+    const url = 'https://www.apple.com'
 
     const sitemapUrls = await getSiteMapUrls(url)
     const cookies = await extractCookiesFromSiteMaps(sitemapUrls)
