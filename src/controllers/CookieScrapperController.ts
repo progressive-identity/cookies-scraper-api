@@ -70,6 +70,7 @@ export class CookieScrapperController
     // TODO(later): add the possibility to select how many page to check for the cookies
     // TODO: maybe fetch 50% of the page in the limit of 100 pages
     // TODO: test a message queue (rabbitMQ ?) because this function will be slow
+    // TODO: find a way to classify the cookies
     const url = 'https://www.google.com'
 
     const sitemapUrls = await getSiteMapUrls(url)
