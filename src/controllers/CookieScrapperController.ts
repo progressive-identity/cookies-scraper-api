@@ -7,6 +7,20 @@ import { Request, Response } from 'express'
 import puppeteer, { Protocol } from 'puppeteer'
 import GetSitemapLinks from 'get-sitemap-links'
 
+async function getSiteMapUrls(url: URL): URL[] | null {
+  // TODO: rework the url to get the root url if it is not
+  const robotsTxtUrl = `${url}/robots.txt`
+  const res = await fetch(robotsTxtUrl)
+  const txt = await res.text()
+  const sitemapUrls = txt.match(/Sitemap:.*$/gm)
+  if (sitemapUrls.length > 0) {
+    return sitemapUrls.map(
+      (sitemapUrl) => new URL(sitemapUrl.split('Sitemap:')[1].trim())
+    )
+  }
+  return null
+}
+
 async function extractCookies(url: URL): Promise<Protocol.Network.Cookie[]> {
   const browser = await puppeteer.launch()
   const page = await browser.newPage()
@@ -24,7 +38,8 @@ async function extractCookies(url: URL): Promise<Protocol.Network.Cookie[]> {
 function removeDuplicates(arr: object[], key: string) {
   return [...new Map(arr.map((item) => [item[key], item])).values()]
 }
-async function extractCookiesSiteMap(url: URL) {
+
+async function extractCookieFromSiteMap(url: URL): Promise<object[]> {
   const links = await GetSitemapLinks(url.toString())
   console.log('pages number', links.length)
   const cookies = []
@@ -36,6 +51,12 @@ async function extractCookiesSiteMap(url: URL) {
     )
   }
 
+  return removeDuplicates(cookies.flat(), 'name')
+}
+async function extractCookiesFromSiteMaps(urls: URL[]): Promise<object[]> {
+  const cookies = await Promise.all(
+    urls.map((url) => extractCookieFromSiteMap(url))
+  )
   return removeDuplicates(cookies.flat(), 'name')
 }
 
@@ -50,9 +71,9 @@ export class CookieScrapperController
     // TODO: maybe fetch 50% of the page in the limit of 100 pages
     // TODO: test a message queue (rabbitMQ ?) because this function will be slow
     const url = 'https://www.google.com'
-    const sitemapUrl = `${url}/sitemap.xml`
 
-    const cookies = await extractCookiesSiteMap(new URL(sitemapUrl))
+    const sitemapUrls = await getSiteMapUrls(url)
+    const cookies = await extractCookiesFromSiteMaps(sitemapUrls)
 
     console.log('length', cookies.length)
     console.log('cookies', cookies)
