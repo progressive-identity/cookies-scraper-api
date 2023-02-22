@@ -16,3 +16,16 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+
+      # This action requires an unshallow working copy,
+      # so the following prerequisites are necessary:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      # Deploy the application to CC
+      - uses: 47ng/actions-clever-cloud@v1.3.1
+        with:
+          appID: app_b0b9941d-3815-4ec0-a196-7411cac292f0
+        env:
+          CLEVER_TOKEN: ${{ secrets.CLEVER_TOKEN }}
+          CLEVER_SECRET: ${{ secrets.CLEVER_SECRET }}
