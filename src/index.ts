@@ -1,4 +1,3 @@
-import './utils/logging/initapm'
 import dotenv from 'dotenv'
 import app from './server'
 import 'regenerator-runtime/runtime.js'

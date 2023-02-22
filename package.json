@@ -1,7 +1,7 @@
 {
-  "name": "legal-document-generator-api",
-  "version": "0.0.3",
-  "description": "An API to generate legal document using one or several Record Of Processing Activities (ROPAs) as input",
+  "name": "poc-cookie-scrapper",
+  "version": "0.0.1",
+  "description": "A POC to scrap cookie from a website",
   "main": "src/index.js",
   "scripts": {
     "start": "node dist/src/index.js",
@@ -61,7 +61,6 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
-    "elastic-apm-node": "^3.42.0",
     "express": "^4.18.2",
     "helmet": "^6.0.1",
     "puppeteer": "^19.7.2",
