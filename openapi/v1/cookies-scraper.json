@@ -37,7 +37,8 @@
         "parameters": [
           {
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uri"
             },
             "in": "query",
             "name": "url",
