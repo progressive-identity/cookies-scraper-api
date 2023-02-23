@@ -20,14 +20,14 @@ export class CookiesService {
     // TODO: find a way to classify the cookies
     // TODO: fetch the root url by default (important)
 
+    const cookies = await this.extractCookies(new URL(url))
+
     let domain = new URL(url).hostname
 
     if (domain.startsWith('www.')) {
       domain = domain.replace('www.', '')
     }
 
-    const cookies = await this.extractCookies(new URL(url))
-    // TODO extract domain from url
     const sortedCookies = this.sortCookies(cookies, domain)
 
     return {
