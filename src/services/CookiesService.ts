@@ -1,11 +1,14 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-/* eslint-disable */
 import puppeteer, { Protocol } from 'puppeteer'
 import GetSitemapLinks from 'get-sitemap-links'
 import { GetByUrlResData } from '../controllers/types/cookiesType'
+import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
 
 export class CookiesService {
+  readonly mapper
+  constructor() {
+    this.mapper = new CookieInfoMapper()
+  }
+
   async getCookieInfos(url: string): Promise<GetByUrlResData> {
     // TODO: find the sitemap url automatically
     // TODO: recursively interrogate the sitemap when the sitemap only reference other sitemaps
@@ -15,38 +18,16 @@ export class CookiesService {
     // TODO: find a way to classify the cookies
     // TODO: fetch the root url by default (important)
 
-    // const sitemapUrls = await this.getSiteMapUrls(url)
-    // const cookies = await this.extractCookiesFromSiteMaps(sitemapUrls)
+    const cookies = await this.extractCookies(new URL(url))
 
-    return [
-      {
-        name: 'string',
-        value: 'string',
-        duration: 0,
-        domain: 'string',
-      },
-    ]
-  }
-
-  async getSiteMapUrls(url: URL): URL[] | null {
-    // TODO: rework the url to get the root url if it is not
-    const robotsTxtUrl = `${url}/robots.txt`
-    const res = await fetch(robotsTxtUrl)
-    const txt = await res.text()
-    const sitemapUrls = txt.match(/Sitemap:.*$/gm)
-    if (sitemapUrls.length > 0) {
-      return sitemapUrls.map(
-        (sitemapUrl) => new URL(sitemapUrl.split('Sitemap:')[1].trim())
-      )
-    }
-    return null
+    return this.mapper.toEntityBulk(cookies)
   }
 
   async extractCookies(url: URL): Promise<Protocol.Network.Cookie[]> {
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
-    await page.goto(url, { waitUntil: 'networkidle2' })
+    await page.goto(url.toString(), { waitUntil: 'networkidle2' })
     // Get the cookies from the page
     // const cookies = await page.cookies()
     const client = await page.target().createCDPSession()
@@ -56,29 +37,29 @@ export class CookiesService {
     return cookies
   }
 
-  removeDuplicates(arr: object[], key: string) {
-    return [...new Map(arr.map((item) => [item[key], item])).values()]
-  }
-
-  async extractCookieFromSiteMap(url: URL): Promise<object[]> {
-    const links = await GetSitemapLinks(url.toString())
-    console.log('pages number', links.length)
-    const cookies = []
-    if (links.length) {
-      cookies.push(await this.extractCookies(links[0]))
-      cookies.push(await this.extractCookies(links[links.length - 1]))
-      cookies.push(
-        await this.extractCookies(links[Number(Math.round(links.length / 2))])
-      )
-    }
-
-    return this.removeDuplicates(cookies.flat(), 'name')
-  }
-
-  async extractCookiesFromSiteMaps(urls: URL[]): Promise<object[]> {
-    const cookies = await Promise.all(
-      urls.map((url) => this.extractCookieFromSiteMap(url))
-    )
-    return this.removeDuplicates(cookies.flat(), 'name')
-  }
+  // removeDuplicates(arr: object[], key: string) {
+  //   return [...new Map(arr.map((item) => [item[key], item])).values()]
+  // }
+  //
+  // async extractCookieFromSiteMap(url: URL): Promise<object[]> {
+  //   const links = await GetSitemapLinks(url.toString())
+  //   console.log('pages number', links.length)
+  //   const cookies = []
+  //   if (links.length) {
+  //     cookies.push(await this.extractCookies(links[0]))
+  //     cookies.push(await this.extractCookies(links[links.length - 1]))
+  //     cookies.push(
+  //       await this.extractCookies(links[Number(Math.round(links.length / 2))])
+  //     )
+  //   }
+  //
+  //   return this.removeDuplicates(cookies.flat(), 'name')
+  // }
+  //
+  // async extractCookiesFromSiteMaps(urls: URL[]): Promise<object[]> {
+  //   const cookies = await Promise.all(
+  //     urls.map((url) => this.extractCookieFromSiteMap(url))
+  //   )
+  //   return this.removeDuplicates(cookies.flat(), 'name')
+  // }
 }
