@@ -24,7 +24,13 @@ export interface components {
     CookieInfoList: {
       content: {
         "application/json": external["components/schemas/GeneralResponse.json"] & {
-          data: (external["components/schemas/CookieInfo.json"])[];
+          data: {
+            /** Format: uri */
+            url: string;
+            pagesAnalyzed: number;
+            firstPartyCookies: (external["components/schemas/CookieInfo.json"])[];
+            thirdPartyCookies: (external["components/schemas/CookieInfo.json"])[];
+          };
         };
       };
     };

@@ -12,4 +12,8 @@ export abstract class SitemapUtils {
   // }
   //   return null
   // }
+
+  static getLinks(url: URL): string[] {
+    return [url.toString(), url.origin]
+  }
 }

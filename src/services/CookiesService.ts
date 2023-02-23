@@ -1,10 +1,12 @@
-import puppeteer, { Protocol } from 'puppeteer'
-import GetSitemapLinks from 'get-sitemap-links'
+import puppeteer, { Page, Protocol } from 'puppeteer'
 import { GetByUrlResData } from '../controllers/types/cookiesType'
 import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
+import { ArrayUtils } from '../utils/ArrayUtils'
+import { SitemapUtils } from '../utils/SitemapUtils'
 
 export class CookiesService {
   readonly mapper
+
   constructor() {
     this.mapper = new CookieInfoMapper()
   }
@@ -18,48 +20,100 @@ export class CookiesService {
     // TODO: find a way to classify the cookies
     // TODO: fetch the root url by default (important)
 
-    const cookies = await this.extractCookies(new URL(url))
+    let domain = new URL(url).hostname
 
-    return this.mapper.toEntityBulk(cookies)
+    if (domain.startsWith('www.')) {
+      domain = domain.replace('www.', '')
+    }
+
+    const cookies = await this.extractCookies(new URL(url))
+    // TODO extract domain from url
+    const sortedCookies = this.sortCookies(cookies, domain)
+
+    return {
+      url: url,
+      pagesAnalyzed: 1,
+      firstPartyCookies: this.mapper.toEntityBulk(sortedCookies.firstParty),
+      thirdPartyCookies: this.mapper.toEntityBulk(sortedCookies.thirdParty),
+    }
   }
 
   async extractCookies(url: URL): Promise<Protocol.Network.Cookie[]> {
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
-    await page.goto(url.toString(), { waitUntil: 'networkidle2' })
-    // Get the cookies from the page
-    // const cookies = await page.cookies()
-    const client = await page.target().createCDPSession()
-    const cookies = (await client.send('Network.getAllCookies')).cookies
+    await page.goto(url.origin, { waitUntil: 'networkidle2' })
+
+    const cookies: Protocol.Network.Cookie[] = []
+    cookies.push(...(await this.extractCookiesFromWebsite(page)))
+
+    const links = SitemapUtils.getLinks(url)
+    for (const link of links) {
+      await this.extractCookiesFromPage(page, link)
+    }
+    // FIXME Promise.all should be better but doesn't seems to work
+    // await Promise.all(links.map(async (link) => {
+    //     await this.extractCookiesFromPage(page, link)
+    // }))
 
     await browser.close()
+
     return cookies
   }
 
-  // removeDuplicates(arr: object[], key: string) {
-  //   return [...new Map(arr.map((item) => [item[key], item])).values()]
-  // }
-  //
-  // async extractCookieFromSiteMap(url: URL): Promise<object[]> {
-  //   const links = await GetSitemapLinks(url.toString())
-  //   console.log('pages number', links.length)
-  //   const cookies = []
-  //   if (links.length) {
-  //     cookies.push(await this.extractCookies(links[0]))
-  //     cookies.push(await this.extractCookies(links[links.length - 1]))
-  //     cookies.push(
-  //       await this.extractCookies(links[Number(Math.round(links.length / 2))])
-  //     )
-  //   }
-  //
-  //   return this.removeDuplicates(cookies.flat(), 'name')
-  // }
-  //
-  // async extractCookiesFromSiteMaps(urls: URL[]): Promise<object[]> {
-  //   const cookies = await Promise.all(
-  //     urls.map((url) => this.extractCookieFromSiteMap(url))
-  //   )
-  //   return this.removeDuplicates(cookies.flat(), 'name')
-  // }
+  /**
+   * TODO
+   * @param page
+   * @private
+   */
+  private async extractCookiesFromWebsite(
+    page: Page
+  ): Promise<Protocol.Network.Cookie[]> {
+    const client = await page.target().createCDPSession()
+    return (await client.send('Network.getAllCookies')).cookies
+  }
+
+  /**
+   * TODO
+   * @param page
+   * @param url
+   * @private
+   */
+  private async extractCookiesFromPage(
+    page: Page,
+    url: string
+  ): Promise<Protocol.Network.Cookie[]> {
+    await page.goto(url, { waitUntil: 'networkidle2' })
+    return page.cookies()
+  }
+
+  /**
+   * TODO
+   * @param cookies
+   * @param domain
+   */
+  sortCookies(
+    cookies: Protocol.Network.Cookie[],
+    domain: string
+  ): {
+    firstParty: Protocol.Network.Cookie[]
+    thirdParty: Protocol.Network.Cookie[]
+  } {
+    const sortedCookies = {
+      firstParty: [] as Protocol.Network.Cookie[],
+      thirdParty: [] as Protocol.Network.Cookie[],
+    }
+
+    ArrayUtils.removeDuplicate<Protocol.Network.Cookie>(cookies).map(
+      (cookie) => {
+        if (cookie.domain.includes(domain)) {
+          sortedCookies.firstParty.push(cookie)
+        } else {
+          sortedCookies.thirdParty.push(cookie)
+        }
+      }
+    )
+
+    return sortedCookies
+  }
 }
