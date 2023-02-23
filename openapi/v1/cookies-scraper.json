@@ -11,32 +11,38 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8080/v1/api"
+      "url": "http://localhost:8080/v1/api",
+      "description": "local"
     }
   ],
   "paths": {
-    "/cookies/{url}": {
+    "/cookies": {
       "get": {
         "summary": "Your GET endpoint",
         "tags": [],
         "responses": {
           "200": {
             "$ref": "#/components/responses/CookieInfoList"
+          },
+          "": {
+            "$ref": "#/components/responses/CookieInfoList"
           }
         },
         "operationId": "getCookies",
-        "description": "Fetch cookies from the url of a website present in path param."
+        "description": "Fetch cookies from the url of a website present in path param.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "url",
+            "required": true,
+            "description": "The url from where to fetch"
+          }
+        ]
       },
-      "parameters": [
-        {
-          "schema": {
-            "type": "string"
-          },
-          "name": "url",
-          "in": "path",
-          "required": true
-        }
-      ]
+      "parameters": []
     }
   },
   "components": {

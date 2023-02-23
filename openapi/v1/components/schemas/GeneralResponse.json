@@ -1,5 +1,8 @@
 {
   "title": "GeneralResponse",
+  "x-stoplight": {
+    "id": "b23c6f42c4e1a"
+  },
   "type": "object",
   "description": "General response",
   "properties": {
