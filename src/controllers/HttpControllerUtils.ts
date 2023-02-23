@@ -1,6 +1,6 @@
 import { Response } from 'express'
 
-type GeneralDetailsResData = Record<string, unknown>
+type GeneralDetailsResData = Record<string, unknown> | Record<string, unknown>[]
 
 /**
  * TODO

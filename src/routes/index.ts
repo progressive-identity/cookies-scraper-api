@@ -1,2 +1,1 @@
-// PRIVACY POLICIES
-export * from './cookieScrapper'
+export * from './cookies'
