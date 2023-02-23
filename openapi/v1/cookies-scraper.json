@@ -7,7 +7,12 @@
     "title": "cookies-scraper",
     "version": "1.0",
     "summary": "An API to scrape and classify cookies from a website.",
-    "description": "An API to scrape and classify cookies from a website."
+    "description": "An API to scrape and classify cookies from a website.",
+    "contact": {
+      "name": "Alias Tech Team",
+      "url": "https://www.alias.dev/",
+      "email": "support@gdpr.dev"
+    }
   },
   "servers": [
     {
@@ -19,12 +24,11 @@
     "/cookies": {
       "get": {
         "summary": "Your GET endpoint",
-        "tags": [],
+        "tags": [
+          "Cookies"
+        ],
         "responses": {
           "200": {
-            "$ref": "#/components/responses/CookieInfoList"
-          },
-          "": {
             "$ref": "#/components/responses/CookieInfoList"
           }
         },
@@ -55,7 +59,7 @@
             "schema": {
               "allOf": [
                 {
-                  "$ref": "./components/schemas/GeneralReponse.json"
+                  "$ref": "./components/schemas/GeneralResponse.json"
                 },
                 {
                   "type": "object",
@@ -77,5 +81,10 @@
         }
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "Cookies"
+    }
+  ]
 }
