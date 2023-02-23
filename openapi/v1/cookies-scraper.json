@@ -18,6 +18,10 @@
     {
       "url": "http://localhost:8080/v1/api",
       "description": "local"
+    },
+    {
+      "url": "https://cookies-scrapper-api.cleverapps.io/v1/api",
+      "description": "staging"
     }
   ],
   "paths": {
