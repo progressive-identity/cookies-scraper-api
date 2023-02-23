@@ -1,0 +1,12 @@
+{
+  "title": "CookieInfo",
+  "x-stoplight": {
+    "id": "4s1jx3clfop5m"
+  },
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    }
+  }
+}
