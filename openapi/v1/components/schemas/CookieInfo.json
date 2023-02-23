@@ -2,8 +2,23 @@
   "title": "CookieInfo",
   "type": "object",
   "properties": {
-    "id": {
+    "name": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    },
+    "duration": {
+      "type": "number"
+    },
+    "domain": {
       "type": "string"
     }
-  }
+  },
+  "required": [
+    "name",
+    "value",
+    "duration",
+    "domain"
+  ]
 }

@@ -1,0 +1,17 @@
+{
+  "title": "GeneralResponse",
+  "type": "object",
+  "description": "General response",
+  "properties": {
+    "code": {
+      "type": "integer",
+      "example": 200,
+      "minimum": 100,
+      "description": "The code of the response",
+      "readOnly": true
+    }
+  },
+  "required": [
+    "code"
+  ]
+}
