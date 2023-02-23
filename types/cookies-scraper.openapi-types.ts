@@ -5,17 +5,12 @@
 
 
 export interface paths {
-  "/cookies/{url}": {
+  "/cookies": {
     /**
      * Your GET endpoint 
      * @description Fetch cookies from the url of a website present in path param.
      */
     get: operations["getCookies"];
-    parameters: {
-      path: {
-        url: string;
-      };
-    };
   };
 }
 
@@ -23,36 +18,39 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    /** User */
-    User: {
-      /** @description Unique identifier for the given user. */
-      id: number;
-      firstName: string;
-      lastName: string;
-      /** Format: email */
-      email: string;
-      /**
-       * Format: date 
-       * @example 1997-10-31
-       */
-      dateOfBirth?: string;
-      /** @description Set to true if the user's email has been verified. */
-      emailVerified: boolean;
-      /**
-       * Format: date 
-       * @description The date that the user was created.
-       */
-      createDate?: string;
+  };
+  responses: {
+    /** @description Example response */
+    CookieInfoList: {
+      content: {
+        "application/json": external["components/schemas/GeneralResponse.json"] & {
+          data: (external["components/schemas/CookieInfo.json"])[];
+        };
+      };
     };
   };
-  responses: never;
   parameters: never;
   requestBodies: never;
   headers: never;
   pathItems: never;
 }
 
-export type external = Record<string, never>;
+export interface external {
+
+  "components/schemas/CookieInfo.json": {
+    name: string;
+    value: string;
+    duration: number;
+    domain: string;
+  }
+  "components/schemas/GeneralResponse.json": {
+    /**
+     * @description The code of the response 
+     * @example 200
+     */
+    code: number;
+  }
+}
 
 export interface operations {
 
@@ -61,9 +59,14 @@ export interface operations {
      * Your GET endpoint 
      * @description Fetch cookies from the url of a website present in path param.
      */
+    parameters: {
+        /** @description The url from where to fetch */
+      query: {
+        url: string;
+      };
+    };
     responses: {
-      /** @description OK */
-      200: never;
+      200: components["responses"]["CookieInfoList"];
     };
   };
 }
