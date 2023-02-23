@@ -1,5 +1,5 @@
 {
-  "name": "cookie-scraping-api",
+  "name": "cookies-scraper-api",
   "version": "0.0.1",
   "description": "An API to scrape and classify cookies from a website.",
   "main": "src/index.js",
