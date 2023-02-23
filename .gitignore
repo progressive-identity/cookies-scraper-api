@@ -109,6 +109,7 @@ dist
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+.idea/inspectionProfiles/
 
 # Vue build output
 .output
@@ -152,4 +153,3 @@ Temporary Items
 
 .clever.json
 .spectral.mjs
-
