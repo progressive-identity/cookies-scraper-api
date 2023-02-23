@@ -70,9 +70,33 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "./components/schemas/CookieInfo.json"
+                      "type": "object",
+                      "required": [
+                        "url",
+                        "pagesAnalyzed",
+                        "firstPartyCookies",
+                        "thirdPartyCookies"
+                      ],
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "pagesAnalyzed": {
+                          "type": "number"
+                        },
+                        "firstPartyCookies": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "./components/schemas/CookieInfo.json"
+                          }
+                        },
+                        "thirdPartyCookies": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "./components/schemas/CookieInfo.json"
+                          }
+                        }
                       }
                     }
                   },
