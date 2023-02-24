@@ -3,7 +3,7 @@ import { GetByUrlResData } from '../controllers/types/cookiesType'
 import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
 import { ArrayUtils } from '../utils/ArrayUtils'
 import { SitemapUtils } from '../utils/SitemapUtils'
-import * as perf_hooks from 'perf_hooks'
+import perf_hooks from 'perf_hooks'
 import { aliasLogger } from '../utils/logging/aliasLogger'
 
 export class CookiesService {
@@ -14,16 +14,21 @@ export class CookiesService {
   }
 
   async getCookieInfos(url: string): Promise<GetByUrlResData> {
-    const t0 = perf_hooks.performance.now()
-
     const validUrl = new URL(url)
+    let start = perf_hooks.performance.now()
     const links = await SitemapUtils.getLinks(validUrl)
+    let end = perf_hooks.performance.now()
+    aliasLogger.info(`Getting links : ${end - start}ms`)
+
+    start = perf_hooks.performance.now()
     const cookies = await this.extractCookies(validUrl, links)
+    end = perf_hooks.performance.now()
+    aliasLogger.info(`Extracting cookies : ${end - start}ms`)
 
+    start = perf_hooks.performance.now()
     const sortedCookies = this.sortCookies(cookies, validUrl)
-
-    const t1 = perf_hooks.performance.now()
-    aliasLogger.info(`${t1 - t0}ms`)
+    end = perf_hooks.performance.now()
+    aliasLogger.info(`Sort cookies : ${end - start}ms`)
 
     return {
       url: url,

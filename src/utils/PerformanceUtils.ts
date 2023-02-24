@@ -1,8 +1,5 @@
 import Sitemapper from 'sitemapper'
 
-/**
- * TODO
- */
 export abstract class SitemapUtils {
   /**
    * TODO
