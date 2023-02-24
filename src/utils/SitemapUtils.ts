@@ -1,28 +1,17 @@
-export abstract class SitemapUtils {
-  // static getSiteMapUrls(url: URL): Promise<URL[] | null> {
-  // TODO: rework the url to get the root url if it is not
-  // const robotsTxtUrl = `${url}/robots.txt`
-  // const res = await fetch(robotsTxtUrl)
-  // const txt = await res.text()
-  //
-  // if (sitemapUrls && sitemapUrls.length > 0) {
-  //   return sitemapUrls.map(
-  //     (sitemapUrl) => new URL(sitemapUrl.split('Sitemap:')[1].trim())
-  //   )
-  // }
-  //   return null
-  // }
+import Sitemapper from 'sitemapper'
 
+export abstract class SitemapUtils {
   /**
    * TODO
    * @param url
    */
-  static async getSitemapUrl(url: URL): Promise<string | null> {
+  static async getSitemapUrls(url: URL): Promise<string[] | null> {
     const robotsTxt = await this.getRobotsTxt(url)
     const regex = robotsTxt.match(/Sitemap:.*$/gm)
     if (regex && regex.length > 0) {
-      regex[0].replace('Sitemap:', '')
-      return regex[0]
+      return regex.map((pattern) => {
+        return pattern.replace('Sitemap:', '')
+      })
     } else {
       return null
     }
@@ -41,8 +30,28 @@ export abstract class SitemapUtils {
    * TODO
    * @param url
    */
-  static getLinks(url: URL): string[] {
-    const sitemapUrl = this.getSitemapUrl(url)
-    return [url.toString(), url.origin]
+  static async getLinks(url: URL): Promise<string[]> {
+    const sitemapUrls = await this.getSitemapUrls(url)
+    if (sitemapUrls) {
+      const links = (
+        await Promise.all(
+          sitemapUrls.map(async (sitemapUrl) => {
+            const sitemap = new Sitemapper({
+              url: sitemapUrl,
+              requestHeaders: {
+                'User-Agent':
+                  'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:81.0) Gecko/20100101 Firefox/81.0',
+              },
+            })
+            const { sites } = await sitemap.fetch()
+            return sites
+          })
+        )
+      ).flat()
+      // We return only the first X links
+      return links.slice(0, 5)
+    } else {
+      return [url.origin]
+    }
   }
 }

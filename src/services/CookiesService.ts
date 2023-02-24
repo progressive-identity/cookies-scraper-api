@@ -3,6 +3,8 @@ import { GetByUrlResData } from '../controllers/types/cookiesType'
 import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
 import { ArrayUtils } from '../utils/ArrayUtils'
 import { SitemapUtils } from '../utils/SitemapUtils'
+import * as perf_hooks from 'perf_hooks'
+import { aliasLogger } from '../utils/logging/aliasLogger'
 
 export class CookiesService {
   readonly mapper
@@ -12,33 +14,29 @@ export class CookiesService {
   }
 
   async getCookieInfos(url: string): Promise<GetByUrlResData> {
-    // TODO: find the sitemap url automatically
-    // TODO: recursively interrogate the sitemap when the sitemap only reference other sitemaps
-    // TODO(later): add the possibility to select how many page to check for the cookies
-    // TODO: maybe fetch 50% of the page in the limit of 100 pages
-    // TODO: test a message queue (rabbitMQ ?) because this function will be slow
-    // TODO: find a way to classify the cookies
-    // TODO: fetch the root url by default (important)
+    const t0 = perf_hooks.performance.now()
 
-    const cookies = await this.extractCookies(new URL(url))
+    const validUrl = new URL(url)
+    const links = await SitemapUtils.getLinks(validUrl)
+    const cookies = await this.extractCookies(validUrl, links)
 
-    let domain = new URL(url).hostname
+    const sortedCookies = this.sortCookies(cookies, validUrl)
 
-    if (domain.startsWith('www.')) {
-      domain = domain.replace('www.', '')
-    }
-
-    const sortedCookies = this.sortCookies(cookies, domain)
+    const t1 = perf_hooks.performance.now()
+    aliasLogger.info(`${t1 - t0}ms`)
 
     return {
       url: url,
-      pagesAnalyzed: 1,
+      pagesAnalyzed: links.length,
       firstPartyCookies: this.mapper.toEntityBulk(sortedCookies.firstParty),
       thirdPartyCookies: this.mapper.toEntityBulk(sortedCookies.thirdParty),
     }
   }
 
-  async extractCookies(url: URL): Promise<Protocol.Network.Cookie[]> {
+  async extractCookies(
+    url: URL,
+    links: string[]
+  ): Promise<Protocol.Network.Cookie[]> {
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
@@ -47,7 +45,6 @@ export class CookiesService {
     const cookies: Protocol.Network.Cookie[] = []
     cookies.push(...(await this.extractCookiesFromWebsite(page)))
 
-    const links = SitemapUtils.getLinks(url)
     for (const link of links) {
       await this.extractCookiesFromPage(page, link)
     }
@@ -90,11 +87,12 @@ export class CookiesService {
   /**
    * TODO
    * @param cookies
-   * @param domain
+   * @param url
+   * @see {@link https://docs.oracle.com/en/cloud/saas/marketing/eloqua-user/Help/EloquaAsynchronousTrackingScripts/Tasks/BasicPageTrackingFirst.htm#}
    */
   sortCookies(
     cookies: Protocol.Network.Cookie[],
-    domain: string
+    url: URL
   ): {
     firstParty: Protocol.Network.Cookie[]
     thirdParty: Protocol.Network.Cookie[]
@@ -104,15 +102,20 @@ export class CookiesService {
       thirdParty: [] as Protocol.Network.Cookie[],
     }
 
-    ArrayUtils.removeDuplicate<Protocol.Network.Cookie>(cookies).map(
-      (cookie) => {
-        if (cookie.domain.includes(domain)) {
-          sortedCookies.firstParty.push(cookie)
-        } else {
-          sortedCookies.thirdParty.push(cookie)
-        }
+    // We extract the domain
+    let domain = url.hostname
+    if (domain.startsWith('www.')) {
+      domain = domain.replace('www.', '')
+    }
+
+    cookies = ArrayUtils.removeDuplicate<Protocol.Network.Cookie>(cookies)
+    cookies.map((cookie) => {
+      if (cookie.domain.includes(domain)) {
+        sortedCookies.firstParty.push(cookie)
+      } else {
+        sortedCookies.thirdParty.push(cookie)
       }
-    )
+    })
 
     return sortedCookies
   }
