@@ -1,4 +1,4 @@
-import Sitemapper from 'sitemapper'
+import { downloadListOfUrls } from 'crawlee'
 
 /**
  * TODO
@@ -32,6 +32,8 @@ export abstract class SitemapUtils {
   /**
    * TODO
    * @param url
+   * @see {@link https://www.npmjs.com/package/get-sitemap-links} too inefficient (lot of urls missing)
+   * @see {@link https://www.npmjs.com/package/sitemapper} efficient (more urls found than crawlee), but way too slow for some sitemaps
    */
   static async getLinks(url: URL): Promise<string[]> {
     const sitemapUrls = await this.getSitemapUrls(url)
@@ -39,20 +41,14 @@ export abstract class SitemapUtils {
       const links = (
         await Promise.all(
           sitemapUrls.map(async (sitemapUrl) => {
-            const sitemap = new Sitemapper({
+            return downloadListOfUrls({
               url: sitemapUrl,
-              requestHeaders: {
-                'User-Agent':
-                  'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:81.0) Gecko/20100101 Firefox/81.0',
-              },
             })
-            const { sites } = await sitemap.fetch()
-            return sites
           })
         )
       ).flat()
       // We return only the first X links
-      return links.slice(0, 5)
+      return links.slice(0, 10)
     } else {
       return [url.origin]
     }

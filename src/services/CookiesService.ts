@@ -23,7 +23,9 @@ export class CookiesService {
     start = perf_hooks.performance.now()
     const cookies = await this.extractCookies(validUrl, links)
     end = perf_hooks.performance.now()
-    aliasLogger.info(`Extracting cookies : ${end - start}ms`)
+    aliasLogger.info(
+      `Extracting cookies (${cookies.length} found) : ${end - start}ms`
+    )
 
     start = perf_hooks.performance.now()
     const sortedCookies = this.sortCookies(cookies, validUrl)
