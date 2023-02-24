@@ -12,6 +12,7 @@ import cors from '@fastify/cors'
 dotenv.config()
 
 const port = process.env.API_PORT ?? 8080
+const host = process.env.HOST ?? 'localhost'
 const whitelist = (process.env.CORS_WHITELIST &&
   process.env.CORS_WHITELIST.split(',')) || ['']
 
@@ -57,7 +58,7 @@ export async function startServer() {
     }
 
     // Starting the server
-    await server.listen({ port: Number(port) })
+    await server.listen({ port: Number(port), host })
 
     process.on('uncaughtException' || 'unhandledRejection', (e) => {
       aliasLogger.error(e)
