@@ -1,4 +1,4 @@
-import { Response } from 'express'
+import { FastifyReply } from 'fastify'
 
 type GeneralDetailsResData = Record<string, unknown> | Record<string, unknown>[]
 
@@ -12,7 +12,7 @@ export abstract class HttpControllerUtils {
    * @param data
    */
   static sendGetResponse<ResData extends GeneralDetailsResData>(
-    res: Response,
+    res: FastifyReply,
     data: ResData
   ) {
     const code = 200
@@ -27,7 +27,7 @@ export abstract class HttpControllerUtils {
    * @param data
    */
   static sendPostResponse<ResData extends GeneralDetailsResData>(
-    res: Response,
+    res: FastifyReply,
     data: ResData
   ) {
     const code = 201
@@ -40,7 +40,7 @@ export abstract class HttpControllerUtils {
    * @param data
    */
   static sendPutResponse<ResData extends GeneralDetailsResData>(
-    res: Response,
+    res: FastifyReply,
     data: ResData
   ) {
     const code = 201
@@ -54,7 +54,7 @@ export abstract class HttpControllerUtils {
    * @param data
    */
   //TODO handle GeneralError type with error status ENUM
-  static sendErrorResponse(res: Response, code = 500, data: object = {}) {
+  static sendErrorResponse(res: FastifyReply, code = 500, data: object = {}) {
     return this.sendResponse(res, code, data)
   }
 
@@ -69,7 +69,11 @@ export abstract class HttpControllerUtils {
     }
   }
 
-  private static sendResponse(res: Response, code: number, data: object = {}) {
+  private static sendResponse(
+    res: FastifyReply,
+    code: number,
+    data: object = {}
+  ) {
     return res.status(code).send({
       code,
       data,

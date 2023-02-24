@@ -1,16 +1,19 @@
 import { HttpControllerUtils } from './HttpControllerUtils'
-import { Response } from 'express'
 import { CookiesService } from '../services/CookiesService'
 import { GetByUrlReq, GetByUrlResData } from './types/cookiesType'
+import { FastifyReply } from 'fastify'
 
 export class CookiesController {
-  getByUrl = async (req: GetByUrlReq, res: Response): Promise<void> => {
+  getByUrl = async (req: GetByUrlReq, res: FastifyReply): Promise<void> => {
     const cookiesService = new CookiesService()
 
+    // TODO improves typing to avoid having to disable warning
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
     const { url } = req.query
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const cookies = await cookiesService.getCookieInfos(url)
 
-    HttpControllerUtils.sendGetResponse<GetByUrlResData>(res, cookies)
+    void HttpControllerUtils.sendGetResponse<GetByUrlResData>(res, cookies)
   }
 }
