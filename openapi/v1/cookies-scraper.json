@@ -48,6 +48,14 @@
             "name": "url",
             "required": true,
             "description": "The url from where to fetch"
+          },
+          {
+            "schema": {
+              "type": "number"
+            },
+            "in": "query",
+            "name": "pagesNumber",
+            "description": "The number of pages we want to fetch"
           }
         ]
       },
