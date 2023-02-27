@@ -47,10 +47,32 @@ export abstract class SitemapUtils {
           })
         )
       ).flat()
-      // We return only the first X links
-      return links.slice(0, 10)
+      // We return only a sample of the links
+      return this.getSampleLinks(links)
     } else {
       return [url.origin]
     }
+  }
+
+  /**
+   * TODO
+   * @param links
+   */
+  static getSampleLinks(links: string[]): string[] {
+    if (links.length <= 10) {
+      return links
+    }
+
+    const sortedList = links.sort()
+    // TODO could be improved
+    // TODO could probably me more elegant and maybe even extracted
+    // TODO use a VE (default) and variable for the maximum number of pages
+    const n = Math.round(Number(links.length / 100))
+    const curatedLinks = []
+    for (let i = 0; i < 100; i++) {
+      curatedLinks.push(sortedList[i * n])
+    }
+
+    return curatedLinks
   }
 }
