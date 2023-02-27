@@ -48,13 +48,14 @@ export async function startServer() {
 
     if (process.env.NODE_ENV === 'production') {
       for (const signal of ['SIGINT', 'SIGTERM']) {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        process.on(signal, () =>
-          server.close().then((err) => {
-            aliasLogger.error(`close application on ${signal}`)
-            process.exit(err ? 1 : 0)
-          })
-        )
+        process.on(signal, () => {
+          void (async () => {
+            await server.close().then((err) => {
+              aliasLogger.error(`close application on ${signal}`)
+              process.exit(err ? 1 : 0)
+            })
+          })()
+        })
       }
     }
 
