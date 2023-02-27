@@ -8,9 +8,10 @@ export abstract class ArrayUtils {
   }
 
   /**
-   * TODO
-   * @param list
-   * @param size
+   * Return a sample of the collection in parameter. To build the sample, first we sort the collection, then we're taking elements separated by the same intervalle.
+   * Examples : getSample([1,2,3,4,5,6], 2) => [1,4], getSample([1,2,3,4,5,6], 3) => [1,3,5]
+   * @param list the collection from which we'll get a sample
+   * @param size the size of the sample
    */
   static getSample(list: string[], size: number): string[] {
     if (list.length <= size) {

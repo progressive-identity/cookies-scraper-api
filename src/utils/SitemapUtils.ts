@@ -2,12 +2,13 @@ import { downloadListOfUrls } from 'crawlee'
 import { ArrayUtils } from './ArrayUtils'
 
 /**
- * TODO
+ * Utilities methods to work with the sitemap of a website.
+ * @see {@link https://yoast.com/what-is-an-xml-sitemap-and-why-should-you-have-one/}
  */
 export abstract class SitemapUtils {
   /**
-   * TODO
-   * @param url
+   * Extract the urls of the sitemaps of a website. It's found in the robots.txt.
+   * @param url the url of the website
    */
   static async getSitemapUrls(url: URL): Promise<string[] | null> {
     const robotsTxt = await this.getRobotsTxt(url)
@@ -22,8 +23,9 @@ export abstract class SitemapUtils {
   }
 
   /**
-   * TODO
-   * @param url
+   * Return the content of the robots.txt of a website.
+   * @param url the url of the website
+   * @see {@link https://developers.google.com/search/docs/crawling-indexing/robots/intro}
    */
   static async getRobotsTxt(url: URL): Promise<string> {
     const res = await fetch(url.origin + '/robots.txt')
@@ -31,9 +33,11 @@ export abstract class SitemapUtils {
   }
 
   /**
-   * TODO
-   * @param url
-   * @param numberOfLinks
+   * Return n urls from a website. The urls are found using the sitemap of the website.
+   * If not sitemap is found then we return the origin of the website.
+   * Alternative packages (to crawlee) to extract the sitemap are presented below.
+   * @param url the url of the website
+   * @param numberOfLinks the number of urls we want, 10 by default
    * @see {@link https://www.npmjs.com/package/get-sitemap-links} too inefficient (lot of urls missing)
    * @see {@link https://www.npmjs.com/package/sitemapper} efficient (more urls found than crawlee), but way too slow for some sitemaps
    */
@@ -49,8 +53,8 @@ export abstract class SitemapUtils {
           })
         )
       ).flat()
+      // Maybe use a VE for the default maximum number of pages (?)
       // We return only a sample of the links
-      // TODO use a VE (default) and variable for the maximum number of pages
       return ArrayUtils.getSample(links, numberOfLinks)
     } else {
       return [url.origin]

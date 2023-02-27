@@ -14,9 +14,9 @@ export class CookiesService {
   }
 
   /**
-   * TODO
-   * @param url
-   * @param pagesNumber
+   * Fetch and return the cookies of a website.
+   * @param url the url of the website
+   * @param pagesNumber the number of pages we want to fetch
    */
   async getCookieInfos(url: string, pagesNumber = 5): Promise<GetByUrlResData> {
     const validUrl = new URL(url)
@@ -47,6 +47,11 @@ export class CookiesService {
     }
   }
 
+  /**
+   * Extract the cookies from a list of urls.
+   * @param url a URL (object) of the website
+   * @param links the list of urls (string) we will fetch
+   */
   async extractCookies(
     url: URL,
     links: string[]
@@ -57,7 +62,7 @@ export class CookiesService {
     await page.goto(url.origin, { waitUntil: 'networkidle2' })
 
     const cookies: Protocol.Network.Cookie[] = []
-    cookies.push(...(await this.extractCookiesFromWebsite(page)))
+    cookies.push(...(await this.extractCookiesFromBrowser(page)))
 
     for (const link of links) {
       await this.extractCookiesFromPage(page, link)
@@ -73,22 +78,20 @@ export class CookiesService {
   }
 
   /**
-   * TODO
-   * @param page
-   * @private
+   * Extract the cookies from the browser using {@link https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-getCookies}.
+   * @param page an opened page from the puppeteer browser
    */
-  private async extractCookiesFromWebsite(
+  private async extractCookiesFromBrowser(
     page: Page
   ): Promise<Protocol.Network.Cookie[]> {
     const client = await page.target().createCDPSession()
-    return (await client.send('Network.getAllCookies')).cookies
+    return (await client.send('Storage.getCookies')).cookies
   }
 
   /**
-   * TODO
+   * Extract the cookies from pages using {@link https://pptr.dev/api/puppeteer.page.cookies}.
    * @param page
    * @param url
-   * @private
    */
   private async extractCookiesFromPage(
     page: Page,
@@ -99,9 +102,9 @@ export class CookiesService {
   }
 
   /**
-   * TODO
-   * @param cookies
-   * @param url
+   * Filter the cookies into two categories, first party and third party. See the link below for more detail.
+   * @param cookies the collection of cookies to sort
+   * @param url a URL (object) of the website used to know the domain
    * @see {@link https://docs.oracle.com/en/cloud/saas/marketing/eloqua-user/Help/EloquaAsynchronousTrackingScripts/Tasks/BasicPageTrackingFirst.htm#}
    */
   sortCookies(
