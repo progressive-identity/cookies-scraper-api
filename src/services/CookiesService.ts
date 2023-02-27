@@ -13,13 +13,18 @@ export class CookiesService {
     this.mapper = new CookieInfoMapper()
   }
 
-  async getCookieInfos(url: string): Promise<GetByUrlResData> {
+  /**
+   * TODO
+   * @param url
+   * @param pagesNumber
+   */
+  async getCookieInfos(url: string, pagesNumber = 5): Promise<GetByUrlResData> {
     const validUrl = new URL(url)
     aliasLogger.info(
       `Starting scrapping of cookies for : ${validUrl.toString()}`
     )
     let start = perf_hooks.performance.now()
-    const links = await SitemapUtils.getLinks(validUrl)
+    const links = await SitemapUtils.getLinks(validUrl, pagesNumber)
     let end = perf_hooks.performance.now()
     aliasLogger.info(`Getting links : ${end - start}ms`)
 
@@ -27,7 +32,9 @@ export class CookiesService {
     const cookies = await this.extractCookies(validUrl, links)
     end = perf_hooks.performance.now()
     aliasLogger.info(
-      `Extracting cookies (${cookies.length} found) : ${end - start}ms`
+      `Extracting cookies (${cookies.length} found on ${pagesNumber} pages) : ${
+        end - start
+      }ms`
     )
 
     const sortedCookies = this.sortCookies(cookies, validUrl)

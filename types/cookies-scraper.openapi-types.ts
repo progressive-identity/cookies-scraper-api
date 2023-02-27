@@ -67,8 +67,10 @@ export interface operations {
      */
     parameters: {
         /** @description The url from where to fetch */
+        /** @description The number of pages we want to fetch */
       query: {
         url: string;
+        pagesNumber?: number;
       };
     };
     responses: {

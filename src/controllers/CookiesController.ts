@@ -9,10 +9,10 @@ export class CookiesController {
 
     // TODO improves typing to avoid having to disable warning
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-    const { url } = req.query
+    const { url, pagesNumber } = req.query
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const cookies = await cookiesService.getCookieInfos(url)
+    const cookies = await cookiesService.getCookieInfos(url, pagesNumber)
 
     void HttpControllerUtils.sendGetResponse<GetByUrlResData>(res, cookies)
   }
