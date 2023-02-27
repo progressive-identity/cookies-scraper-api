@@ -1,20 +1,20 @@
-import fastify from 'fastify'
 import 'regenerator-runtime/runtime.js'
+import fastify from 'fastify'
 import helmet from '@fastify/helmet'
-import xXssProtection from 'x-xss-protection'
+import cors from '@fastify/cors'
 import middleware from '@fastify/middie'
-import dotenv from 'dotenv'
-import { ApiPrefixes } from './routes/urlConstants'
+import xXssProtection from 'x-xss-protection'
 import cookieRouter from './routes/cookies'
 import { aliasLogger } from './utils/logging/aliasLogger'
-import cors from '@fastify/cors'
+import { ApiPrefixes } from './routes/urlConstants'
+import dotenv from 'dotenv'
 
 dotenv.config()
 
 const port = process.env.API_PORT ?? 8080
 const host = process.env.HOST ?? 'localhost'
-const whitelist = (process.env.CORS_WHITELIST &&
-  process.env.CORS_WHITELIST.split(',')) || ['']
+const whitelist =
+  (process.env.CORS_WHITELIST && process.env.CORS_WHITELIST.split(',')) || true
 
 /**
  *
@@ -28,8 +28,9 @@ export async function startServer() {
 
     // Middlewares managed by a @fastify package
     await server.register(helmet)
+    // https://github.com/fastify/fastify-cors#options
     await server.register(cors, {
-      origin: true,
+      origin: whitelist,
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
     })
 
