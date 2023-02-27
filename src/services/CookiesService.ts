@@ -18,7 +18,10 @@ export class CookiesService {
    * @param url the url of the website
    * @param pagesNumber the number of pages we want to fetch
    */
-  async getCookieInfos(url: string, pagesNumber = 5): Promise<GetByUrlResData> {
+  async getCookieInfos(
+    url: string,
+    pagesNumber?: number
+  ): Promise<GetByUrlResData> {
     const validUrl = new URL(url)
     aliasLogger.info(
       `Starting scrapping of cookies for : ${validUrl.toString()}`
@@ -32,9 +35,9 @@ export class CookiesService {
     const cookies = await this.extractCookies(validUrl, links)
     end = perf_hooks.performance.now()
     aliasLogger.info(
-      `Extracting cookies (${cookies.length} found on ${pagesNumber} pages) : ${
-        end - start
-      }ms`
+      `Extracting cookies (${cookies.length} found on ${
+        links.length
+      } pages) : ${end - start}ms`
     )
 
     const sortedCookies = this.sortCookies(cookies, validUrl)
@@ -59,18 +62,11 @@ export class CookiesService {
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
-    await page.goto(url.origin, { waitUntil: 'networkidle2' })
+    await page.goto(url.origin, { waitUntil: 'networkidle0' })
 
     const cookies: Protocol.Network.Cookie[] = []
     cookies.push(...(await this.extractCookiesFromBrowser(page)))
-
-    for (const link of links) {
-      await this.extractCookiesFromPage(page, link)
-    }
-    // FIXME Promise.all should be better but doesn't seems to work
-    // await Promise.all(links.map(async (link) => {
-    //     await this.extractCookiesFromPage(page, link)
-    // }))
+    cookies.push(...(await page.cookies(...links)))
 
     await browser.close()
 
@@ -86,19 +82,6 @@ export class CookiesService {
   ): Promise<Protocol.Network.Cookie[]> {
     const client = await page.target().createCDPSession()
     return (await client.send('Storage.getCookies')).cookies
-  }
-
-  /**
-   * Extract the cookies from pages using {@link https://pptr.dev/api/puppeteer.page.cookies}.
-   * @param page
-   * @param url
-   */
-  private async extractCookiesFromPage(
-    page: Page,
-    url: string
-  ): Promise<Protocol.Network.Cookie[]> {
-    await page.goto(url, { waitUntil: 'networkidle2' })
-    return page.cookies()
   }
 
   /**

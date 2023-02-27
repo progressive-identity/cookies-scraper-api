@@ -41,7 +41,7 @@ export abstract class SitemapUtils {
    * @see {@link https://www.npmjs.com/package/get-sitemap-links} too inefficient (lot of urls missing)
    * @see {@link https://www.npmjs.com/package/sitemapper} efficient (more urls found than crawlee), but way too slow for some sitemaps
    */
-  static async getLinks(url: URL, numberOfLinks = 10): Promise<string[]> {
+  static async getLinks(url: URL, numberOfLinks?: number): Promise<string[]> {
     const sitemapUrls = await this.getSitemapUrls(url)
     if (sitemapUrls) {
       const links = (
@@ -53,9 +53,13 @@ export abstract class SitemapUtils {
           })
         )
       ).flat()
-      // Maybe use a VE for the default maximum number of pages (?)
-      // We return only a sample of the links
-      return ArrayUtils.getSample(links, numberOfLinks)
+      if (numberOfLinks) {
+        // Maybe use a VE for the default maximum number of pages (?)
+        // We return only a sample of the links
+        return ArrayUtils.getSample(links, numberOfLinks)
+      } else {
+        return links
+      }
     } else {
       return [url.origin]
     }
