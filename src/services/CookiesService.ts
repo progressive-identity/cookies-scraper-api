@@ -1,10 +1,11 @@
 import puppeteer, { Page, Protocol } from 'puppeteer'
 import { GetByUrlResData } from '../controllers/types/cookiesType'
 import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
-import { SitemapUtils } from '../utils/SitemapUtils'
+import { ArrayUtils } from '../utils/ArrayUtils'
 import perf_hooks from 'perf_hooks'
 import { aliasLogger } from '../utils/logging/aliasLogger'
-import { ArrayUtils } from '../utils/ArrayUtils'
+import path from 'path'
+import { SitemapUtils } from '../utils/SitemapUtils'
 
 export class CookiesService {
   readonly mapper
@@ -22,7 +23,8 @@ export class CookiesService {
     url: string,
     pagesNumber?: number
   ): Promise<GetByUrlResData> {
-    const validUrl = new URL(url)
+    const u = 'https://www.amazon.com'
+    const validUrl = new URL(u)
     aliasLogger.info(
       `Starting scrapping of cookies for : ${validUrl.toString()}`
     )
@@ -63,11 +65,22 @@ export class CookiesService {
     url: URL,
     links: string[]
   ): Promise<Protocol.Network.Cookie[]> {
-    const browser = await puppeteer.launch()
+    const pathToExtension = path.join(process.cwd(), 'consent')
+
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: [
+        `--disable-extensions-except=${pathToExtension}`,
+        `--load-extension=${pathToExtension}`,
+      ],
+    })
     const page = await browser.newPage()
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
     await page.goto(url.origin, { waitUntil: 'networkidle0' })
 
+    const delay = (ms: number) => new Promise((res) => setTimeout(res, ms))
+
+    await delay(5000)
     const cookies: Protocol.Network.Cookie[] = []
     cookies.push(...(await this.extractCookiesFromBrowser(page)))
     cookies.push(...(await page.cookies(...links)))

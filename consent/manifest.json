@@ -1,0 +1,42 @@
+{
+   "author": "CAVI - Aarhus University",
+   "background": {
+      "persistent": false,
+      "scripts": [ "GDPRConfig.js", "background.js" ]
+   },
+   "browser_action": {
+      "default_popup": "popup.html",
+      "default_title": "Consent-O-Matic"
+   },
+   "browser_specific_settings": {
+      "gecko": {
+         "id": "gdpr@cavi.au.dk",
+         "strict_min_version": "62.0"
+      }
+   },
+   "content_scripts": [ {
+      "all_frames": true,
+      "css": [ "content.css" ],
+      "js": [ "Tools.js", "GDPRConfig.js", "language.js", "Matcher.js", "Consent.js", "Action.js", "Detector.js", "CMP.js", "ConsentEngine.js", "AutomaticDetection.js", "contentScript.js" ],
+      "match_about_blank": true,
+      "matches": [ "\u003Call_urls>" ],
+      "run_at": "document_start"
+   } ],
+   "description": "Automatic handling of GDPR consent forms",
+   "homepage_url": "https://github.com/cavi-au/Consent-O-Matic",
+   "icons": {
+      "48": "icon_48.png",
+      "96": "icon_96.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArAwKA7exoTWpWfyDHW3RUrPaRIHNhTAGDFu/zH/hBbyRjY0Dcba68wGHC//10G2a0iMUJfbylvm4UN59DkXUsZGUv3hLkhe/A6TW5nGVziofNtS11ULpvVfsNJfSupLu29+qa4u6zvsykaEszvHTv9nv63liSzy9UquZbRBKu9Q9Hah83IoteF6cOLYWMz08D/E7eSSUvXxoY16CoKutgmwtbhlIi2miWkjwPN94nw0Pahgp+McoXiFZ+zWNUav92JYBRUY1lc1lQrg1nFL5O7G1Zf5pn88h4T+Go4W4g/Qg93hZ4GJhJrGJS1w51FFQVTcZmE32mn49zxBkWX8KvQIDAQAB",
+   "manifest_version": 2,
+   "name": "Consent-O-Matic",
+   "options_ui": {
+      "open_in_tab": true,
+      "page": "options.html"
+   },
+   "permissions": [ "activeTab", "storage" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1.0.12",
+   "web_accessible_resources": [ "auto.html" ]
+}
