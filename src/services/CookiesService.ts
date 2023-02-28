@@ -1,10 +1,10 @@
 import puppeteer, { Page, Protocol } from 'puppeteer'
 import { GetByUrlResData } from '../controllers/types/cookiesType'
 import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
-import { ArrayUtils } from '../utils/ArrayUtils'
 import { SitemapUtils } from '../utils/SitemapUtils'
 import perf_hooks from 'perf_hooks'
 import { aliasLogger } from '../utils/logging/aliasLogger'
+import { ArrayUtils } from '../utils/ArrayUtils'
 
 export class CookiesService {
   readonly mapper
@@ -45,8 +45,12 @@ export class CookiesService {
     return {
       url: url,
       pagesAnalyzed: links.length,
-      firstPartyCookies: this.mapper.toEntityBulk(sortedCookies.firstParty),
-      thirdPartyCookies: this.mapper.toEntityBulk(sortedCookies.thirdParty),
+      firstPartyCookies: ArrayUtils.removeDuplicate(
+        this.mapper.toEntityBulk(sortedCookies.firstParty)
+      ),
+      thirdPartyCookies: ArrayUtils.removeDuplicate(
+        this.mapper.toEntityBulk(sortedCookies.thirdParty)
+      ),
     }
   }
 
@@ -108,7 +112,6 @@ export class CookiesService {
       domain = domain.replace('www.', '')
     }
 
-    cookies = ArrayUtils.removeDuplicate<Protocol.Network.Cookie>(cookies)
     cookies.map((cookie) => {
       if (cookie.domain.includes(domain)) {
         sortedCookies.firstParty.push(cookie)
