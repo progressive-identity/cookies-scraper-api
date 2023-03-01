@@ -1,3 +1,4 @@
+import './utils/logging/initapm'
 import 'regenerator-runtime/runtime.js'
 import fastify from 'fastify'
 import helmet from '@fastify/helmet'

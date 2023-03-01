@@ -1,4 +1,3 @@
-import './initapm'
 import ecsFormat from '@elastic/ecs-pino-format'
 import pino, { Logger } from 'pino'
 import dotenv from 'dotenv'
@@ -15,7 +14,7 @@ const logLevel = process.env.LOG_LEVEL ?? 'info'
  */
 export let aliasLogger: Logger
 if (nodeEnv !== 'test' && nodeEnv !== 'development') {
-  aliasLogger = pino(ecsFormat({ convertReqRes: true }))
+  aliasLogger = pino(ecsFormat())
 } else {
   aliasLogger = pino({
     name: packageJson.name,
@@ -24,4 +23,9 @@ if (nodeEnv !== 'test' && nodeEnv !== 'development') {
 }
 aliasLogger.info(
   `Logger started on ${nodeEnv} environment, level :${aliasLogger.level}`
+)
+aliasLogger.info(
+  `APM server url : ${process.env.ELASTIC_APM_SERVER_URL || ''}, token : ${
+    process.env.ELASTIC_APM_SECRET_TOKEN || ''
+  }`
 )
