@@ -68,18 +68,26 @@ export class CookiesService {
 
     const browser = await puppeteer.launch({
       headless: 'new',
-      // args: [
-      //   `--disable-extensions-except=${pathToExtension}`,
-      //   `--load-extension=${pathToExtension}`,
-      // ],
+      args: [
+        `--disable-extensions-except=${pathToExtension}`,
+        `--load-extension=${pathToExtension}`,
+      ],
     })
+
     const page = await browser.newPage()
+    await page.goto(
+      'chrome-extension://mdjildafknihdffpkfmmpnpoiajfjnjd/options.html'
+    )
+
+    await page.$$eval('ul.categorylist li', (els) =>
+      els.forEach((el) => el.click())
+    )
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
     await page.goto(url.origin, { waitUntil: 'networkidle0' })
 
     const delay = (ms: number) => new Promise((res) => setTimeout(res, ms))
+    await delay(5000)
 
-    // await delay(5000)
     const cookies: Protocol.Network.Cookie[] = []
     cookies.push(...(await this.extractCookiesFromBrowser(page)))
     cookies.push(...(await page.cookies(...links)))
