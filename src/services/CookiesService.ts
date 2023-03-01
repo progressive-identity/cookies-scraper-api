@@ -23,8 +23,7 @@ export class CookiesService {
     url: string,
     pagesNumber?: number
   ): Promise<GetByUrlResData> {
-    const u = 'https://www.amazon.com'
-    const validUrl = new URL(u)
+    const validUrl = new URL(url)
     aliasLogger.info(
       `Starting scrapping of cookies for : ${validUrl.toString()}`
     )
@@ -69,10 +68,10 @@ export class CookiesService {
 
     const browser = await puppeteer.launch({
       headless: 'new',
-      args: [
-        `--disable-extensions-except=${pathToExtension}`,
-        `--load-extension=${pathToExtension}`,
-      ],
+      // args: [
+      //   `--disable-extensions-except=${pathToExtension}`,
+      //   `--load-extension=${pathToExtension}`,
+      // ],
     })
     const page = await browser.newPage()
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
@@ -80,7 +79,7 @@ export class CookiesService {
 
     const delay = (ms: number) => new Promise((res) => setTimeout(res, ms))
 
-    await delay(5000)
+    // await delay(5000)
     const cookies: Protocol.Network.Cookie[] = []
     cookies.push(...(await this.extractCookiesFromBrowser(page)))
     cookies.push(...(await page.cookies(...links)))
