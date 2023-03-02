@@ -4,7 +4,7 @@
   "description": "An API to scrape and classify cookies from a website.",
   "main": "src/index.js",
   "scripts": {
-    "start": "node dist/src/index.js | pino-elasticsearch --node $(grep ELASTIC_KIBANA_SERVER_URL applicationrc | cut -d \"'\" -f2)",
+    "start": "node dist/src/index.js | pino-elasticsearch --node https://ucUKRTCQIuPJp5F3w8Ec:bN0qitCZU3cEZqz3aIPA@b0tnc0ps3hlet4kj9vsm-elasticsearch.services.clever-cloud.com",
     "dev": "nodemon src/index.ts | pino-pretty",
     "build": "rimraf ./dist && tsc",
     "generate-openapi-types": "node ./scripts/generateOpenApiTypes.mjs",
