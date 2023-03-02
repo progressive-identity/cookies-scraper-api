@@ -23,8 +23,7 @@ const whitelist =
 export async function startServer() {
   try {
     const server = await fastify({
-      // TODO improves logger
-      logger: true,
+      logger: aliasLogger,
     })
 
     // Middlewares managed by a @fastify package
