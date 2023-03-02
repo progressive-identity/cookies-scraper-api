@@ -4,7 +4,7 @@
   "description": "An API to scrape and classify cookies from a website.",
   "main": "src/index.js",
   "scripts": {
-    "start": "node dist/src/index.js",
+    "start": "node dist/src/index.js | pino-elasticsearch --node $(grep ELASTIC_KIBANA_SERVER_URL .env | cut -d '=' -f2)",
     "dev": "nodemon src/index.ts | pino-pretty",
     "build": "rimraf ./dist && tsc",
     "generate-openapi-types": "node ./scripts/generateOpenApiTypes.mjs",
@@ -71,6 +71,7 @@
     "elastic-apm-node": "^3.42.0",
     "fastify": "^4.13.0",
     "pino": "^8.11.0",
+    "pino-elasticsearch": "^6.3.0",
     "puppeteer": "^19.7.2",
     "regenerator-runtime": "^0.13.11",
     "x-xss-protection": "^2.0.0"

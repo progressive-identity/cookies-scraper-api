@@ -24,7 +24,7 @@ export async function startServer() {
   try {
     const server = await fastify({
       // TODO improves logger
-      logger: aliasLogger,
+      logger: true,
     })
 
     // Middlewares managed by a @fastify package
