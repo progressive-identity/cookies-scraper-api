@@ -78,9 +78,10 @@ export class CookiesService {
       // FIXME There seems to be a TimeoutError on some sites (like amazon.fr)
       if (err instanceof TimeoutError) {
         aliasLogger.error({
-          type: 'timeoutCookieBanner',
+          timeoutCookieBanner: true,
           url: page.url(),
-          error: { ...err },
+          // FIXME I don't know why but the following syntax only return the name : error: err or error: { ...err }
+          error: { name: err.name, message: err.message, stack: err.stack },
         })
       } else {
         throw err
@@ -159,11 +160,11 @@ export class CookiesService {
   }
 
   /**
-   * TODO
-   * @param url
-   * @param links
-   * @param sortedCookies
-   * @param duration
+   * Log information about what were found during the fetching of the cookies.
+   * @param url the url that was analyzed
+   * @param links the links that were found
+   * @param sortedCookies the cookies that were fetched
+   * @param duration the total duration of the scrapping
    */
   generateReport(
     url: URL,
@@ -175,7 +176,7 @@ export class CookiesService {
     duration: number
   ) {
     aliasLogger.info({
-      type: 'reportCookieFetching',
+      reportCookieFetching: true,
       duration: duration,
       url,
       pagesNumber: links.length,
