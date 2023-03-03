@@ -1,11 +1,11 @@
-import puppeteer, { Browser, Page, Protocol } from 'puppeteer'
+import { Page, Protocol, TimeoutError } from 'puppeteer'
 import { GetByUrlResData } from '../controllers/types/cookiesType'
 import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
 import { ArrayUtils } from '../utils/ArrayUtils'
 import perf_hooks from 'perf_hooks'
 import { aliasLogger } from '../utils/logging/aliasLogger'
-import path from 'path'
 import { SitemapUtils } from '../utils/SitemapUtils'
+import { BrowserUtils } from '../utils/BrowserUtils'
 
 export class CookiesService {
   readonly mapper
@@ -56,21 +56,6 @@ export class CookiesService {
   }
 
   /**
-   * Configure the consent-o-matic chrome extension to accept all cookies
-   * for a specific page
-   * @param page the Page on which to configure the extension
-   */
-  async configureConsentOMaticOnBrowser(browser: Browser): Promise<void> {
-    const page = await browser.newPage()
-    await page.goto(
-      'chrome-extension://mdjildafknihdffpkfmmpnpoiajfjnjd/options.html'
-    )
-    await page.$$eval('ul.categorylist li', (els) =>
-      els.forEach((el) => el.click())
-    )
-  }
-
-  /**
    * Try to auto-accept the cookie banner to get all the cookies
    * @param page the page on which to accept the cookie banner
    */
@@ -86,40 +71,34 @@ export class CookiesService {
         }
       })
       // Needed to wait for the cookies to load
-      // Needed to left some time to the consent-o-matic extension to work
+      // Needed to leave some time to the consent-o-matic extension to work
       await page.waitForNetworkIdle({ idleTime: 3000 })
     } catch (err) {
-      return
+      // FIXME There seems to be a TimeoutError on some sites (like amazon.fr)
+      if (err instanceof TimeoutError) {
+        aliasLogger.error({
+          type: 'timeoutCookieBanner',
+          url: page.url(),
+          error: { ...err },
+        })
+      } else {
+        throw err
+      }
     }
   }
 
   /**
-   * Extract the cookies from a list of urls.
+   * Extract the cookies from a list of urls. Use an existing instance of a virtual browser.
    * @param url a URL (object) of the website
    * @param links the list of urls (string) we will fetch
+   * @see {@link BrowserUtils.startBrowser}
    */
   async extractCookies(
     url: URL,
     links: string[]
   ): Promise<Protocol.Network.Cookie[]> {
-    const pathToExtension = path.join(
-      process.cwd(),
-      'extensions/consent-o-matic'
-    )
-
-    // Configure browser to enable the consent-o-matic extension
-    // see: https://github.com/cavi-au/Consent-O-Matic
-    const browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        `--disable-extensions-except=${pathToExtension}`,
-        `--load-extension=${pathToExtension}`,
-      ],
-    })
-
-    await this.configureConsentOMaticOnBrowser(browser)
-
-    const page = await browser.newPage()
+    // We use a browser with some extensions already loaded and configured
+    const page = await BrowserUtils.puppeteerBrowser.newPage()
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
     await page.goto(url.origin, { waitUntil: 'networkidle0' })
 
@@ -128,8 +107,6 @@ export class CookiesService {
     const cookies: Protocol.Network.Cookie[] = []
     cookies.push(...(await this.extractCookiesFromBrowser(page)))
     cookies.push(...(await page.cookies(...links)))
-
-    await browser.close()
 
     return cookies
   }
