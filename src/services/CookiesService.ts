@@ -1,6 +1,6 @@
 import { Page, Protocol, TimeoutError } from 'puppeteer'
 import { GetByUrlResData } from '../controllers/types/cookiesType'
-import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
+import { CookieInfo, CookieInfoMapper } from './mappers/api/CookieInfoMapper'
 import { ArrayUtils } from '../utils/ArrayUtils'
 import perf_hooks from 'perf_hooks'
 import { aliasLogger } from '../utils/logging/aliasLogger'
@@ -23,27 +23,15 @@ export class CookiesService {
     url: string,
     pagesNumber?: number
   ): Promise<GetByUrlResData> {
+    const start = perf_hooks.performance.now()
     const validUrl = new URL(url)
-    aliasLogger.info(
-      `Starting scrapping of cookies for : ${validUrl.toString()}`
-    )
-    let start = perf_hooks.performance.now()
     const links = await SitemapUtils.getLinks(validUrl, pagesNumber)
-    let end = perf_hooks.performance.now()
-    aliasLogger.info(`Getting links : ${end - start}ms`)
 
-    start = perf_hooks.performance.now()
     const cookies = await this.extractCookies(validUrl, links)
-    end = perf_hooks.performance.now()
-    aliasLogger.info(
-      `Extracting cookies (${cookies.length} found on ${
-        links.length
-      } pages) : ${end - start}ms`
-    )
 
     const sortedCookies = this.sortCookies(cookies, validUrl)
 
-    return {
+    const result = {
       url: url,
       pagesAnalyzed: links.length,
       firstPartyCookies: ArrayUtils.removeDuplicate(
@@ -53,6 +41,19 @@ export class CookiesService {
         this.mapper.toEntityBulk(sortedCookies.thirdParty)
       ),
     }
+    const end = perf_hooks.performance.now()
+
+    this.generateReport(
+      validUrl,
+      links,
+      {
+        firstParty: result.firstPartyCookies,
+        thirdParty: result.thirdPartyCookies,
+      },
+      end - start
+    )
+
+    return result
   }
 
   /**
@@ -155,5 +156,33 @@ export class CookiesService {
     })
 
     return sortedCookies
+  }
+
+  /**
+   * TODO
+   * @param url
+   * @param links
+   * @param sortedCookies
+   * @param duration
+   */
+  generateReport(
+    url: URL,
+    links: string[],
+    sortedCookies: {
+      firstParty: CookieInfo[]
+      thirdParty: CookieInfo[]
+    },
+    duration: number
+  ) {
+    aliasLogger.info({
+      type: 'reportCookieFetching',
+      duration: duration,
+      url,
+      pagesNumber: links.length,
+      cookiesTotal:
+        sortedCookies.firstParty.length + sortedCookies.thirdParty.length,
+      cookiesFirstParty: sortedCookies.firstParty.length,
+      cookiesThirdParty: sortedCookies.thirdParty.length,
+    })
   }
 }
