@@ -73,6 +73,7 @@
     "pino": "^8.11.0",
     "pino-elasticsearch": "^6.3.0",
     "puppeteer": "^19.7.2",
+    "radash": "^10.7.0",
     "regenerator-runtime": "^0.13.11",
     "x-xss-protection": "^2.0.0"
   }

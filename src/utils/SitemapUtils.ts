@@ -1,5 +1,6 @@
 import { downloadListOfUrls } from 'crawlee'
 import { ArrayUtils } from './ArrayUtils'
+import { isEmpty } from 'radash'
 
 /**
  * Utilities methods to work with the sitemap of a website.
@@ -53,6 +54,9 @@ export abstract class SitemapUtils {
           })
         )
       ).flat()
+      if (isEmpty(links)) {
+        return [url.origin]
+      }
       if (numberOfLinks) {
         // Maybe use a VE for the default maximum number of pages (?)
         // We return only a sample of the links
