@@ -1,10 +1,11 @@
-import puppeteer, { Page, Protocol } from 'puppeteer'
+import puppeteer, { Browser, Page, Protocol } from 'puppeteer'
 import { GetByUrlResData } from '../controllers/types/cookiesType'
 import { CookieInfoMapper } from './mappers/api/CookieInfoMapper'
-import { SitemapUtils } from '../utils/SitemapUtils'
+import { ArrayUtils } from '../utils/ArrayUtils'
 import perf_hooks from 'perf_hooks'
 import { aliasLogger } from '../utils/logging/aliasLogger'
-import { ArrayUtils } from '../utils/ArrayUtils'
+import path from 'path'
+import { SitemapUtils } from '../utils/SitemapUtils'
 
 export class CookiesService {
   readonly mapper
@@ -55,6 +56,44 @@ export class CookiesService {
   }
 
   /**
+   * Configure the consent-o-matic chrome extension to accept all cookies
+   * for a specific page
+   * @param page the Page on which to configure the extension
+   */
+  async configureConsentOMaticOnBrowser(browser: Browser): Promise<void> {
+    const page = await browser.newPage()
+    await page.goto(
+      'chrome-extension://mdjildafknihdffpkfmmpnpoiajfjnjd/options.html'
+    )
+    await page.$$eval('ul.categorylist li', (els) =>
+      els.forEach((el) => el.click())
+    )
+  }
+
+  /**
+   * Try to auto-accept the cookie banner to get all the cookies
+   * @param page the page on which to accept the cookie banner
+   */
+  async acceptCookieBanner(page: Page): Promise<void> {
+    try {
+      await page.evaluate(() => {
+        const buttons = Array.from(document.querySelectorAll('button'))
+        const acceptButtons = buttons.filter((button) =>
+          button.innerText.match(/accept/gi)
+        )
+        if (acceptButtons.length > 0) {
+          acceptButtons.forEach((button) => button.click())
+        }
+      })
+      // Needed to wait for the cookies to load
+      // Needed to left some time to the consent-o-matic extension to work
+      await page.waitForNetworkIdle({ idleTime: 3000 })
+    } catch (err) {
+      return
+    }
+  }
+
+  /**
    * Extract the cookies from a list of urls.
    * @param url a URL (object) of the website
    * @param links the list of urls (string) we will fetch
@@ -63,10 +102,28 @@ export class CookiesService {
     url: URL,
     links: string[]
   ): Promise<Protocol.Network.Cookie[]> {
-    const browser = await puppeteer.launch()
+    const pathToExtension = path.join(
+      process.cwd(),
+      'extensions/consent-o-matic'
+    )
+
+    // Configure browser to enable the consent-o-matic extension
+    // see: https://github.com/cavi-au/Consent-O-Matic
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: [
+        `--disable-extensions-except=${pathToExtension}`,
+        `--load-extension=${pathToExtension}`,
+      ],
+    })
+
+    await this.configureConsentOMaticOnBrowser(browser)
+
     const page = await browser.newPage()
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
     await page.goto(url.origin, { waitUntil: 'networkidle0' })
+
+    await this.acceptCookieBanner(page)
 
     const cookies: Protocol.Network.Cookie[] = []
     cookies.push(...(await this.extractCookiesFromBrowser(page)))
