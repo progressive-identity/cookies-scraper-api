@@ -101,6 +101,11 @@ export class CookiesService {
   ): Promise<Protocol.Network.Cookie[]> {
     // We use a browser with some extensions already loaded and configured
     const page = await BrowserUtils.puppeteerBrowser.newPage()
+
+    // We first we delete existing cookies, necessary since we use a single instance of a virtual browser
+    const client = await page.target().createCDPSession()
+    await client.send('Storage.clearCookies')
+
     await page.setExtraHTTPHeaders({ Referer: 'https://example.com' })
     await page.goto(url.origin, { waitUntil: 'networkidle0' })
 
