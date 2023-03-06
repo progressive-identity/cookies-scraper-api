@@ -12,9 +12,10 @@ const nodeEnv = process.env.NODE_ENV ?? 'development'
 const kibanaUrl = process.env.ELASTIC_KIBANA_SERVER_URL ?? ''
 
 /**
- * @see {@link https://getpino.io/#/}
- * @see {@link https://www.elastic.co/guide/en/ecs-logging/nodejs/current/pino.html#pino}
- * @see {@link https://betterstack.com/community/guides/logging/how-to-install-setup-and-use-pino-to-log-node-js-applications/}
+ * @see {@link https://www.notion.so/aliasdev/Logging-ed0ddeecd04b440490ad5a0fe04ac23c} internal documentation
+ * @see {@link https://getpino.io/#/} pino documentation
+ * @see {@link https://www.elastic.co/guide/en/ecs-logging/nodejs/current/pino.html#pino} elastic documentation
+ * @see {@link https://betterstack.com/community/guides/logging/how-to-install-setup-and-use-pino-to-log-node-js-applications/} a tutorial
  */
 export let aliasLogger: Logger = pino({
   name: packageJson.name,

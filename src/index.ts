@@ -18,7 +18,7 @@ const whitelist =
   (process.env.CORS_WHITELIST && process.env.CORS_WHITELIST.split(',')) || true
 
 /**
- *
+ * Start a Fastify server
  */
 export async function startServer() {
   try {
