@@ -1,14 +1,14 @@
 name: GitHub Actions Deploy to Clever Cloud
 run-name: Deploying ${{ github.ref_name }} of ${{ github.repository }} on Clever Cloud 🚀
-on: [push]
+on: [ push ]
 jobs:
-  deploy-to-clever-cloud:
+  deploy-to-cc:
 
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [18.13.0]
+        node-version: [ 18.13.0 ]
 
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event from ${{ github.actor }}."
@@ -39,21 +39,24 @@ jobs:
           CLEVER_TOKEN: ${{ secrets.CLEVER_TOKEN }}
           CLEVER_SECRET: ${{ secrets.CLEVER_SECRET }}
 
-      # Send notifications to Slack
-      - name: Send GitHub Action trigger data to Slack workflow
+  slack-notification:
+    runs-on: ubuntu-latest
+    needs: deploy-to-cc
+    if: ${{ always() }}
+    steps:
+      - name: Sending notification to Slack
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          # For posting a rich message using Block Kit
+          # For posting a rich message using Block Kit to notify on failure
           payload: |
             {
-              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} deployed on Clever Cloud: ${{ job.status }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} deployed on Clever Cloud: ${{ job.status }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
+                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{job.status}}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
                   }
                 }
               ]
@@ -61,5 +64,4 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-
       - run: echo "This job's status is ${{ job.status }}."
