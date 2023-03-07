@@ -2,10 +2,9 @@ name: GitHub Actions Deploy to Clever Cloud
 run-name: Deploying ${{ github.ref_name }} of ${{ github.repository }} on Clever Cloud 🚀
 on: [ push ]
 jobs:
+
   deploy-to-cc:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [ 18.13.0 ]
@@ -52,13 +51,13 @@ jobs:
           # https://api.slack.com/reference/messaging/payload
           payload: |
             {
-              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{job.status}}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
+              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{job.deploy-to-cc.status}}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{job.status}}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
+                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{job.deploy-to-cc.status}}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
                   }
                 }
               ]
