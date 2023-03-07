@@ -65,13 +65,13 @@ jobs:
           # https://api.slack.com/block-kit/building
           payload: |
             {
-              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ jobs.deploy_to_cc.result == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
+              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ job.deploy_to_cc.status == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ jobs.deploy_to_cc.result == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
+                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ job.deploy_to_cc.status == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
                   }
                 }
               ]
@@ -80,4 +80,4 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
       - run: echo "This job's status is ${{ job.status }}."
-      - run: echo "TEST ${{ jobs.deploy_to_cc.result }}."
+      - run: echo "TEST ${{ job.deploy_to_cc }}."
