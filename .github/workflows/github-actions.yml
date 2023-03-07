@@ -3,33 +3,41 @@ run-name: Deploying ${{ github.ref_name }} of ${{ github.repository }} on Clever
 on: [ push ]
 jobs:
 
-  deploy_to_cc:
+  # Build the application and run the tests
+  build_and_test:
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ 18.13.0 ]
-
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event from ${{ github.actor }}."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref_name }} and your repository is ${{ github.repository }}."
-        # The action to deploy on CC requires an unshallow working copy,
-        # so the following prerequisites are necessary:
+
+        # The action to deploy on CC requires an unshallow working copy, so fetch-depth is necessary
+      - name: Checking out the repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setting up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm run test:unit --if-present
+
+  # Deploy the application to CC
+  deploy_to_cc:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_name == 'main' || github.ref_name == 'staging' || github.ref_name == 'dev' }}
+    needs: build_and_test
+    steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
-      - run: npm ci
-      - run: npm run build
-      - run: npm test --if-present
-
-      # Deploy the application to CC
       - name: Starting the deployment on Clever Cloud
         uses: 47ng/actions-clever-cloud@v1.3.1
         with:
@@ -39,6 +47,7 @@ jobs:
           CLEVER_TOKEN: ${{ secrets.CLEVER_TOKEN }}
           CLEVER_SECRET: ${{ secrets.CLEVER_SECRET }}
 
+  # Send a result notification on Slack
   slack-notification:
     runs-on: ubuntu-latest
     needs: deploy_to_cc
@@ -54,13 +63,13 @@ jobs:
           # https://api.slack.com/block-kit/building
           payload: |
             {
-              "text": "Branch ${{ github.ref_name }} by ${{ github.actor }}, status : ${{ job.deploy_to_cc.status == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
+              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ job.deploy_to_cc.status == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Branch ${{ github.ref_name }} by ${{ github.actor }}, status : ${{ job.deploy_to_cc.status == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
+                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ job.deploy_to_cc.status == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
                   }
                 }
               ]
