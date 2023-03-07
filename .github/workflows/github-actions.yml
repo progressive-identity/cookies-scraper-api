@@ -51,13 +51,13 @@ jobs:
           # https://api.slack.com/reference/messaging/payload
           payload: |
             {
-              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{job.deploy-to-cc.status}}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
+              "text": "Branch ${{ github.ref_name }} by ${{ github.actor }}, status : ${{ job.deploy-to-cc.status }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{job.deploy-to-cc.status}}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
+                    "text": "Branch ${{ github.ref_name }} by ${{ github.actor }}, status : ${{ job.deploy-to-cc.status }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
                   }
                 }
               ]
@@ -65,4 +65,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-      - run: echo "This job's status is ${{ job.status }}."
+          SLACK_COLOR: "${{ job.deploy-to-cc.status == 'success' && 'good' || 'danger' }}"
+          SLACK_ICON_EMOJI: ":cookie:"
+          SLACK_USERNAME: "${{ github.repository }}"
