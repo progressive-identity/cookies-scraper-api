@@ -2,7 +2,7 @@ name: GitHub Actions Deploy to Clever Cloud
 run-name: Deploying ${{ github.ref_name }} of ${{ github.repository }} on Clever Cloud 🚀
 on: [ push ]
 jobs:
-
+  
   # Build the application and run the tests
   build_and_test:
     timeout-minutes: 10
@@ -32,6 +32,8 @@ jobs:
   deploy_to_cc:
     timeout-minutes: 10
     runs-on: ubuntu-latest
+    outputs:
+      result: ${{ job.status }}
     if: ${{ github.ref_name == 'main' || github.ref_name == 'staging' || github.ref_name == 'dev' }}
     needs: build_and_test
     steps:
@@ -65,13 +67,13 @@ jobs:
           # https://api.slack.com/block-kit/building
           payload: |
             {
-              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ job.deploy_to_cc.status == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
+              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ needs.deploy_to_cc.outputs.result }} ${{ needs.deploy_to_cc.outputs.result == 'success' && ':white_check_mark:' || needs.deploy_to_cc.outputs.result == 'failure' && ':x:' || ':black_square_for_stop:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ job.deploy_to_cc.status == 'success' && ':white_check_mark:' || ':x:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
+                    "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{ needs.deploy_to_cc.outputs.result }} ${{ needs.deploy_to_cc.outputs.result == 'success' && ':white_check_mark:' || needs.deploy_to_cc.outputs.result == 'failure' && ':x:' || ':black_square_for_stop:' }}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>."
                   }
                 }
               ]
@@ -80,4 +82,3 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
       - run: echo "This job's status is ${{ job.status }}."
-      - run: echo "TEST ${{ job.deploy_to_cc }}."
