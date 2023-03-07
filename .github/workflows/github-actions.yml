@@ -33,7 +33,7 @@ jobs:
       - name: Starting the deployment on Clever Cloud
         uses: 47ng/actions-clever-cloud@v1.3.1
         with:
-          appID: app_b0b9941d-3815-4ec0-a196-7411cac292f0
+          appID: ${{ secrets.CLEVER_APP_ID_PROD }}
           force: true
         env:
           CLEVER_TOKEN: ${{ secrets.CLEVER_TOKEN }}
@@ -49,8 +49,10 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         with:
           # For posting a rich message using Block Kit to notify on failure
+          # https://api.slack.com/reference/messaging/payload
           payload: |
             {
+              "text": "Branch ${{ github.ref_name }} of ${{ github.repository }} by ${{ github.actor }}, status : ${{job.status}}\n Latest commit : <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|${{ github.event.head_commit.message }}>.",
               "blocks": [
                 {
                   "type": "section",
