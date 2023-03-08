@@ -1,10 +1,10 @@
 name: Nightly build
-run-name: Build the application and run the tests during the night
+run-name: Build the application and run the tests during the night (each working days at 3AM UTC)
 on:
   schedule:
     # * is a special character in YAML, so you have to quote this string
-    # https://crontab.guru/
-    - cron:  '*/5 * * * *'
+    # https://crontab.guru/ (cron time is in UTC)
+    - cron:  '0 3 * * 1-5'
 jobs:
 
   # Build the application and run the tests
