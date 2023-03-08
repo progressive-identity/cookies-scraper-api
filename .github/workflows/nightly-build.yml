@@ -4,7 +4,7 @@ on:
   schedule:
     # * is a special character in YAML, so you have to quote this string
     # https://crontab.guru/
-    - cron:  '0 15 * * *'
+    - cron:  '*/5 * * * *'
 jobs:
 
   # Build the application and run the tests
