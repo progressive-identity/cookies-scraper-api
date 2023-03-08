@@ -1,10 +1,11 @@
 import pino, { Logger } from 'pino'
 import dotenv from 'dotenv'
 import ecsFormat from '@elastic/ecs-pino-format'
-import packageJson from './../../../package.json'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import pinoElastic from 'pino-elasticsearch'
+import path from 'path'
+import appRootPath from 'app-root-path'
 
 dotenv.config()
 const logLevel = process.env.LOG_LEVEL ?? 'info'
@@ -18,7 +19,7 @@ const kibanaUrl = process.env.ELASTIC_KIBANA_SERVER_URL ?? ''
  * @see {@link https://betterstack.com/community/guides/logging/how-to-install-setup-and-use-pino-to-log-node-js-applications/} a tutorial
  */
 export let aliasLogger: Logger = pino({
-  name: packageJson.name,
+  name: path.basename(appRootPath.toString()),
   level: logLevel,
 })
 if (nodeEnv !== 'development') {
