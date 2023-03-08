@@ -1,0 +1,30 @@
+name: Nightly build
+run-name: Build the application and run the tests during the night
+on:
+  schedule:
+    # * is a special character in YAML, so you have to quote this string
+    # https://crontab.guru/
+    - cron:  '*/5 * * * *'
+jobs:
+
+  # Build the application and run the tests
+  build_and_test:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event from ${{ github.actor }}."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref_name }} and your repository is ${{ github.repository }}."
+
+      - name: Checking out the repository
+        uses: actions/checkout@v3
+
+      - name: Setting up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm run test:unit --if-present
+      - run: echo "This job's status is ${{ job.status }}."
