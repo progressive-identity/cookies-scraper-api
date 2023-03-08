@@ -1,7 +1,5 @@
 import apm from 'elastic-apm-node'
 import dotenv from 'dotenv'
-import appRootPath from 'app-root-path'
-import path from 'path'
 
 dotenv.config()
 
@@ -13,6 +11,6 @@ if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
   apm.start({
     serverUrl: process.env.ELASTIC_APM_SERVER_URL,
     secretToken: process.env.ELASTIC_APM_SECRET_TOKEN,
-    serviceName: path.basename(appRootPath.toString()),
+    serviceName: process.env.ELASTIC_SERVICE_NAME ?? 'cookie-scrapper-api',
   })
 }
