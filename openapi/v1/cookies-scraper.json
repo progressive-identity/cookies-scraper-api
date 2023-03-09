@@ -96,13 +96,13 @@
                         "firstPartyCookies": {
                           "type": "array",
                           "items": {
-                            "$ref": "./components/schemas/CookieInfo.json"
+                            "$ref": "./components/schemas/ScriptInfo.json"
                           }
                         },
                         "thirdPartyCookies": {
                           "type": "array",
                           "items": {
-                            "$ref": "./components/schemas/CookieInfo.json"
+                            "$ref": "./components/schemas/ScriptInfo.json"
                           }
                         }
                       }

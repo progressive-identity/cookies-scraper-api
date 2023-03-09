@@ -1,0 +1,27 @@
+{
+  "title": "ScriptInfo",
+  "x-stoplight": {
+    "id": "a9mgwf67p9wkz"
+  },
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string"
+    },
+    "cookies": {
+      "type": "array",
+      "x-stoplight": {
+        "id": "hv6319a745svl"
+      },
+      "items": {
+        "$ref": "./CookieInfo.json",
+        "x-stoplight": {
+          "id": "6qhfyes2bx47v"
+        }
+      }
+    }
+  },
+  "required": [
+    "domain"
+  ]
+}
