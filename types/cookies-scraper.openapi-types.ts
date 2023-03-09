@@ -28,8 +28,8 @@ export interface components {
             /** Format: uri */
             url: string;
             pagesAnalyzed: number;
-            firstPartyCookies: (external["components/schemas/CookieInfo.json"])[];
-            thirdPartyCookies: (external["components/schemas/CookieInfo.json"])[];
+            firstPartyCookies: (external["components/schemas/ScriptInfo.json"])[];
+            thirdPartyCookies: (external["components/schemas/ScriptInfo.json"])[];
           };
         };
       };
@@ -55,6 +55,10 @@ export interface external {
      * @example 200
      */
     code: number;
+  }
+  "components/schemas/ScriptInfo.json": {
+    domain: string;
+    cookies?: (external["components/schemas/CookieInfo.json"])[];
   }
 }
 

@@ -55,7 +55,7 @@ export class CookiesService {
     return null
   }
 
-  mapScriptCookies(cookies: Protocol.Network.Cookie[], scriptsSrc: string[]) {
+  mapScriptCookies(cookies: CookieInfo[], scriptsSrc: string[]) {
     const scriptsDomain = [
       ...new Set(
         scriptsSrc.filter((src) => src !== '').map((e) => new URL(e).hostname)
@@ -63,7 +63,7 @@ export class CookiesService {
     ]
 
     const scriptDomainsInfos = this.getUrlInfosBulk(scriptsDomain)
-    const scripts: { domain: string; cookies: Protocol.Network.Cookie[] }[] = []
+    const scripts: { domain: string; cookies: CookieInfo[] }[] = []
 
     const remainingScripts = [...scriptsDomain]
 
@@ -114,22 +114,42 @@ export class CookiesService {
     const validUrl = new URL(url)
     const links = await SitemapUtils.getLinks(validUrl, pagesNumber)
 
-    const cookies = await this.extractCookies(validUrl, links)
-
-    const testPath = path.join(process.cwd(), 'test2.json')
-
-    await fs.writeFile(testPath, JSON.stringify(cookies))
+    const { cookies, scripts } = await this.extractCookies(validUrl, links)
 
     const sortedCookies = this.sortCookies(cookies, validUrl)
+
+    const firstPartyScripts = scripts.filter((script) => {
+      try {
+        const urlInfos = new URL(script).hostname
+        return validUrl.hostname === urlInfos
+      } catch {
+        return false
+      }
+    })
+
+    const thirdPartyScripts = scripts.filter((script) => {
+      try {
+        const urlInfos = new URL(script).hostname
+        return validUrl.hostname !== urlInfos
+      } catch {
+        return true
+      }
+    })
 
     const result = {
       url: url,
       pagesAnalyzed: links.length,
-      firstPartyCookies: ArrayUtils.removeDuplicate(
-        this.mapper.toEntityBulk(sortedCookies.firstParty)
+      firstPartyCookies: this.mapScriptCookies(
+        ArrayUtils.removeDuplicate(
+          this.mapper.toEntityBulk(sortedCookies.firstParty)
+        ),
+        firstPartyScripts
       ),
-      thirdPartyCookies: ArrayUtils.removeDuplicate(
-        this.mapper.toEntityBulk(sortedCookies.thirdParty)
+      thirdPartyCookies: this.mapScriptCookies(
+        ArrayUtils.removeDuplicate(
+          this.mapper.toEntityBulk(sortedCookies.thirdParty)
+        ),
+        thirdPartyScripts
       ),
     }
     const end = perf_hooks.performance.now()
@@ -138,8 +158,8 @@ export class CookiesService {
       validUrl,
       links,
       {
-        firstParty: result.firstPartyCookies,
-        thirdParty: result.thirdPartyCookies,
+        firstParty: this.mapper.toEntityBulk(sortedCookies.firstParty),
+        thirdParty: this.mapper.toEntityBulk(sortedCookies.thirdParty),
       },
       end - start
     )
@@ -189,7 +209,7 @@ export class CookiesService {
   async extractCookies(
     url: URL,
     links: string[]
-  ): Promise<Protocol.Network.Cookie[]> {
+  ): Promise<{ cookies: Protocol.Network.Cookie[]; scripts: string[] }> {
     // We use a browser with some extensions already loaded and configured
     const page = await BrowserUtils.puppeteerBrowser.newPage()
 
@@ -206,7 +226,13 @@ export class CookiesService {
     cookies.push(...(await this.extractCookiesFromBrowser(page)))
     cookies.push(...(await page.cookies(...links)))
 
-    return cookies
+    const scripts = await page.evaluate(() => {
+      return Array.from(document.scripts)
+        .filter((e) => e.type === 'text/javascript')
+        .map((e) => e.src)
+    })
+
+    return { cookies, scripts }
   }
 
   /**
