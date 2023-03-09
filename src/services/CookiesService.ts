@@ -9,11 +9,96 @@ import { BrowserUtils } from '../utils/BrowserUtils'
 import path from 'path'
 import fs from 'fs/promises'
 
+type UrlInfos = { full: string; domain: string }
+
 export class CookiesService {
   readonly mapper
 
   constructor() {
     this.mapper = new CookieInfoMapper()
+  }
+
+  /**
+   * TODO
+   **/
+  getUrlInfos(url: string): UrlInfos {
+    const urlWithoutFirstDot = url.startsWith('.') ? url.substring(1) : url
+    const splitUrl = urlWithoutFirstDot.split('.')
+    const splitUrlLength = splitUrl.length
+
+    return {
+      full: url.startsWith('.') ? url.substring(1) : url,
+      domain: url.split('.').slice(-2).join('.'),
+    }
+  }
+
+  getUrlInfosBulk(urls: string[]): UrlInfos[] {
+    return urls.map((scriptDomain) => this.getUrlInfos(scriptDomain))
+  }
+
+  findByUrlInfos(urlsList: UrlInfos[], url: UrlInfos): UrlInfos | undefined {
+    return urlsList.find(
+      (urlInfos) =>
+        urlInfos.full === url.domain || urlInfos.domain === url.domain
+    )
+  }
+
+  associateDomains(
+    cookieUrl: UrlInfos,
+    scriptsUrls: UrlInfos[]
+  ): string | null {
+    const urlInfos = this.findByUrlInfos(scriptsUrls, cookieUrl)
+
+    if (urlInfos) {
+      return urlInfos.full
+    }
+    return null
+  }
+
+  mapScriptCookies(cookies: Protocol.Network.Cookie[], scriptsSrc: string[]) {
+    const scriptsDomain = [
+      ...new Set(
+        scriptsSrc.filter((src) => src !== '').map((e) => new URL(e).hostname)
+      ),
+    ]
+
+    const scriptDomainsInfos = this.getUrlInfosBulk(scriptsDomain)
+    const scripts: { domain: string; cookies: Protocol.Network.Cookie[] }[] = []
+
+    const remainingScripts = [...scriptsDomain]
+
+    cookies.forEach((cookie) => {
+      const scriptDomain = this.associateDomains(
+        this.getUrlInfos(cookie.domain),
+        scriptDomainsInfos
+      )
+      if (scriptDomain) {
+        const cscEl = scripts.find((e) => e.domain === scriptDomain)
+        if (cscEl) {
+          cscEl.cookies.push(cookie)
+        } else {
+          scripts.push({ domain: scriptDomain, cookies: [cookie] })
+        }
+        const remainingScriptsIndex = remainingScripts.findIndex(
+          (rs) => rs === scriptDomain
+        )
+        if (remainingScriptsIndex !== -1) {
+          delete remainingScripts[remainingScriptsIndex]
+        }
+      } else {
+        const cscUkn = scripts.find((e) => e.domain === 'unknown')
+        if (cscUkn) {
+          cscUkn.cookies.push(cookie)
+        } else {
+          scripts.push({ domain: 'unknown', cookies: [cookie] })
+        }
+      }
+    })
+
+    return [
+      ...scripts,
+      ...remainingScripts.map((rs) => ({ domain: rs, cookies: [] })),
+    ].filter((e) => e !== undefined)
   }
 
   /**
@@ -30,16 +115,10 @@ export class CookiesService {
     const links = await SitemapUtils.getLinks(validUrl, pagesNumber)
 
     const cookies = await this.extractCookies(validUrl, links)
-    
-    const testPath = path.join(
-        process.cwd(),
-        'test2.json'
-    )
+
+    const testPath = path.join(process.cwd(), 'test2.json')
 
     await fs.writeFile(testPath, JSON.stringify(cookies))
-
-    //@ts-ignore
-    return 
 
     const sortedCookies = this.sortCookies(cookies, validUrl)
 
