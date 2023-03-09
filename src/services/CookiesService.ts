@@ -6,6 +6,8 @@ import perf_hooks from 'perf_hooks'
 import { aliasLogger } from '../utils/logging/aliasLogger'
 import { SitemapUtils } from '../utils/SitemapUtils'
 import { BrowserUtils } from '../utils/BrowserUtils'
+import path from 'path'
+import fs from 'fs/promises'
 
 export class CookiesService {
   readonly mapper
@@ -28,6 +30,16 @@ export class CookiesService {
     const links = await SitemapUtils.getLinks(validUrl, pagesNumber)
 
     const cookies = await this.extractCookies(validUrl, links)
+    
+    const testPath = path.join(
+        process.cwd(),
+        'test2.json'
+    )
+
+    await fs.writeFile(testPath, JSON.stringify(cookies))
+
+    //@ts-ignore
+    return 
 
     const sortedCookies = this.sortCookies(cookies, validUrl)
 
