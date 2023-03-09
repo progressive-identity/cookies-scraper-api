@@ -62,7 +62,11 @@ export async function startServer() {
     // Starting the server
     await server.listen({ port: Number(port), host })
 
-    process.on('uncaughtException' || 'unhandledRejection', (err) => {
+    process.on('unhandledRejection', (err) => {
+      aliasLogger.error(err)
+      process.exit(1)
+    })
+    process.on('uncaughtException', (err) => {
       aliasLogger.error(err)
       process.exit(1)
     })

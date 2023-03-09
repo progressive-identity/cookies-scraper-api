@@ -1,0 +1,13 @@
+# This file will be more a .dockerinclude rather than a .dockerignore :)
+# Exclude all
+***
+# Include those files:
+!package*.json
+# Include those paths:
+!tsconfig.json
+!puppeteerrc.cjs
+!types/**
+!src/**
+!openapi/**
+!extensions/**
+!.cache/**
