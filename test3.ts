@@ -83,7 +83,20 @@ function mapScriptCookies(cookies: Protocol.Network.Cookie[], scriptsSrc: string
         }
     })
 
-    console.log(csc)
+
+    const r = scriptsDomain.map((url) => {
+        const f = csc.find((e) => e.domain === url)
+        if(f) {
+            return f
+        }
+        return { domain: url, cookies: []}
+    })
+    const u = csc.find((e) => e.domain === 'unknown')
+    if (u) {
+        r.push(u)
+    }
+    console.log(r)
+
     // console.log([...new Set(cookies.map(e => e.domain))])
 }
 
