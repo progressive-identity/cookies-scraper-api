@@ -5,8 +5,11 @@
   },
   "type": "object",
   "properties": {
-    "domain": {
-      "type": "string"
+    "src": {
+      "type": "string",
+      "x-stoplight": {
+        "id": "wfkx73ir4ywpz"
+      }
     },
     "cookies": {
       "type": "array",
@@ -22,6 +25,7 @@
     }
   },
   "required": [
-    "domain"
+    "src",
+    "cookies"
   ]
 }

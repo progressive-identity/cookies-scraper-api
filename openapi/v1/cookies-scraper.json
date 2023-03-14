@@ -60,6 +60,42 @@
         ]
       },
       "parameters": []
+    },
+    "/scripts": {
+      "get": {
+        "summary": "Get all scripts",
+        "tags": [
+          "Cookies"
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ScriptInfoList"
+          }
+        },
+        "operationId": "getCookies",
+        "description": "Fetch scripts and their associated cookies from the url of a website present in query param.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "in": "query",
+            "name": "url",
+            "required": true,
+            "description": "The url from where to fetch"
+          },
+          {
+            "schema": {
+              "type": "number"
+            },
+            "in": "query",
+            "name": "pagesNumber",
+            "description": "The number of pages we want to fetch"
+          }
+        ]
+      },
+      "parameters": []
     }
   },
   "components": {
@@ -96,13 +132,71 @@
                         "firstPartyCookies": {
                           "type": "array",
                           "items": {
-                            "$ref": "./components/schemas/ScriptInfo.json"
+                            "$ref": "./components/schemas/CookieInfo.json"
                           }
                         },
                         "thirdPartyCookies": {
                           "type": "array",
                           "items": {
-                            "$ref": "./components/schemas/ScriptInfo.json"
+                            "$ref": "./components/schemas/CookieInfo.json"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "ScriptInfoList": {
+        "description": "Example response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "./components/schemas/GeneralResponse.json"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "url",
+                        "pagesAnalyzed",
+                        "firstPartyScripts",
+                        "thirdPartyScripts"
+                      ],
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "pagesAnalyzed": {
+                          "type": "number"
+                        },
+                        "firstPartyScripts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "./components/schemas/ScriptInfo.json",
+                            "x-stoplight": {
+                              "id": "w4p0mup5ovmi3"
+                            }
+                          }
+                        },
+                        "thirdPartyScripts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "./components/schemas/ScriptInfo.json",
+                            "x-stoplight": {
+                              "id": "ou9mxm2l2tiyb"
+                            }
                           }
                         }
                       }
