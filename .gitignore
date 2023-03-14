@@ -110,6 +110,8 @@ dist
 .idea/**/dictionaries
 .idea/**/shelf
 .idea/inspectionProfiles/
+# SonarLint directories
+.idea/sonarlint
 
 # Vue build output
 .output
