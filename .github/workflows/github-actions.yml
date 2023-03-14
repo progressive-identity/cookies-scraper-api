@@ -55,7 +55,7 @@ jobs:
   slack_notification:
     runs-on: ubuntu-latest
     needs: deploy_to_cc
-    if: ${{ always() }}
+    if: success() || failure()
     steps:
       - name: Sending notification to Slack
         id: slack
